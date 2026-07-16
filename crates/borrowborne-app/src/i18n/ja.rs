@@ -34,6 +34,10 @@ pub static JA: Tr = Tr {
 
     raw_diagnostic: "世界の生の言葉",
 
+    combat_miss: "空振り",
+    combat_blocked: "防がれた",
+    combat_lost: "迷失",
+
     e0382: Voice {
         line: "「渡したものだ、狩人よ。手放したものは戻らぬ。」",
         note: "値はムーブされた：所有権が移れば、古い名は死ぬ。& で貸すか、.clone() で双子を鍛えよ。",

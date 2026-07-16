@@ -44,10 +44,12 @@ who want the true roguelike covenant.
 - [x] Blood echoes: currency dropped on pass; **your echoes drop where
       you die** — re-solve the puzzle to reclaim them (the corpse run is
       "go face your bug"). Hints are the first echo sink (5/10/20).
-- [ ] Combat presentation over the same verdicts: monster HP bars,
-      compile error = whiff, trial failed = blocked, pass = kill;
-      learned concepts unlock skill animations. Presentation only — the
-      judge stays the compiler.
+- [x] Combat presentation over the same verdicts: monster HP bar,
+      compile error = whiff (MISS), trial failed = blocked, timeout =
+      lost, pass = kill (slash + HP drain + echo gain float), panic =
+      counterattack (death flash + dropped-echo float). Presentation
+      only — the judge stays the compiler.
+- [ ] Learned concepts unlock skill animations.
 - [ ] Curse modifiers per run (data-driven): "no `.clone()` this run",
       "unwrap kills instantly", randomized trial inputs.
 - [ ] Map screen: region nodes, lock/unlock states.

@@ -34,6 +34,10 @@ pub static ZH: Tr = Tr {
 
     raw_diagnostic: "世界的原話",
 
+    combat_miss: "揮空",
+    combat_blocked: "被格擋",
+    combat_lost: "迷失",
+
     e0382: Voice {
         line: "「你已把它交出去了，獵人。給出去的，就不再回來。」",
         note: "值已被移動：所有權轉移後，舊的名字就死了。改用 & 借出，或用 .clone() 鑄一個雙生子。",

@@ -16,6 +16,11 @@ All notable changes to Borrowborne are documented here. Format follows
 - **Hints now cost echoes** (5 / 10 / 20 per tier); the lantern
   refuses the broke. The purse and any distant stain show in the top
   bar; a stain at the current door is called out in the scene.
+- **Combat skin**: the trial is a monster with a health bar above the
+  editor. Compile error floats MISS, failed trial BLOCKED, timeout
+  LOST; a pass slashes the bar, drains it, and floats the echo gain;
+  a panic floats the echoes you dropped. Presentation only — every
+  outcome is still decided solely by the compiler.
 
 ## [0.3.0] - 2026-07-16
 

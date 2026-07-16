@@ -98,8 +98,36 @@ fn scene_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
 fn editor_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
     let tr = app.lang.strings();
     let casting = app.casting();
+    let (monster_id, monster_title) = {
+        let p = app.current_puzzle();
+        (p.id.clone(), p.title.clone())
+    };
+    let slain = app.progress.solved.contains(&monster_id);
 
     egui::CentralPanel::default().show(ctx, |ui| {
+        ui.add_space(4.0);
+
+        // The encounter: the trial is the monster, its health bar the
+        // gate. Pure presentation — only a Passed verdict can drain it.
+        ui.horizontal(|ui| {
+            ui.label(
+                RichText::new(format!("☠ {monster_title}"))
+                    .strong()
+                    .color(BLOOD),
+            );
+            let hp = ui.ctx().animate_value_with_time(
+                egui::Id::new(("monster-hp", monster_id)),
+                if slain { 0.0 } else { 1.0 },
+                0.8,
+            );
+            let bar = ui.add(
+                egui::ProgressBar::new(hp)
+                    .desired_width(ui.available_width())
+                    .fill(BLOOD),
+            );
+            app.encounter_bar = bar.rect;
+        });
+
         ui.add_space(4.0);
         ui.label(RichText::new(tr.editor_hint).weak().italics());
         ui.add_space(4.0);

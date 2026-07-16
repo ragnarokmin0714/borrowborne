@@ -34,6 +34,10 @@ pub static EN: Tr = Tr {
 
     raw_diagnostic: "The raw words of the world",
 
+    combat_miss: "MISS",
+    combat_blocked: "BLOCKED",
+    combat_lost: "LOST",
+
     e0382: Voice {
         line: "“You gave that away, hunter. What is given is gone.”",
         note: "A value was moved: after ownership transfers, the old name is dead. Lend it with & instead, or forge a twin with .clone().",

@@ -92,6 +92,11 @@ pub struct Tr {
     // Raw compiler output disclosure.
     pub raw_diagnostic: &'static str,
 
+    // Floating combat text.
+    pub combat_miss: &'static str,
+    pub combat_blocked: &'static str,
+    pub combat_lost: &'static str,
+
     // The most common compiler errors, performed as NPC dialogue.
     pub e0382: Voice, // use of moved value
     pub e0384: Voice, // assign twice to immutable

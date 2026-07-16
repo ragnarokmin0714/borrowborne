@@ -40,6 +40,8 @@ pub struct BorrowborneApp {
     cast_rx: Option<mpsc::Receiver<Verdict>>,
     /// Center of the Cast button last frame; particle burst origin.
     cast_origin: egui::Pos2,
+    /// The monster's health bar last frame; combat fx anchor here.
+    encounter_bar: egui::Rect,
     /// Set when progress changed this frame: flush the save immediately
     /// instead of waiting for eframe's autosave tick, so a crash right
     /// after a pass (or a death) can never eat the verdict.
@@ -92,6 +94,7 @@ impl BorrowborneApp {
             verdict: None,
             cast_rx: None,
             cast_origin: egui::pos2(0.0, 0.0),
+            encounter_bar: egui::Rect::NOTHING,
             dirty: false,
             hints_shown: 0,
             fx: Fx::default(),
@@ -158,13 +161,42 @@ impl BorrowborneApp {
 
         let puzzle = self.current_puzzle();
         let (id, concepts) = (puzzle.id.clone(), puzzle.concepts.clone());
+        let purse_before = self.progress.echoes;
         self.progress.record(&id, &concepts, &verdict);
         self.dirty = true;
 
-        if verdict.is_pass() {
-            self.fx.on_pass(self.cast_origin);
-        } else if verdict.is_lethal() {
-            self.fx.on_death();
+        // Combat theater: the verdict decides, these only perform it.
+        let tr = self.lang.strings();
+        let stage = self.encounter_bar.center_top();
+        match &verdict {
+            Verdict::Passed => {
+                self.fx.on_kill(self.encounter_bar);
+                self.fx.on_pass(self.cast_origin);
+                let gained = self.progress.echoes.saturating_sub(purse_before);
+                if gained > 0 {
+                    self.fx
+                        .float_text(stage, format!("+{gained} ◉"), theme::RUNE_GOLD);
+                }
+            }
+            Verdict::CompileError(_) => {
+                self.fx
+                    .float_text(stage, tr.combat_miss, egui::Color32::GRAY);
+            }
+            Verdict::TrialFailed(_) => {
+                self.fx.float_text(stage, tr.combat_blocked, theme::EMBER);
+            }
+            Verdict::Timeout => {
+                self.fx
+                    .float_text(stage, tr.combat_lost, egui::Color32::GRAY);
+            }
+            Verdict::Panicked(_) => {
+                self.fx.on_death();
+                let dropped = purse_before.saturating_sub(self.progress.echoes);
+                if dropped > 0 {
+                    self.fx
+                        .float_text(stage, format!("☠ -{dropped} ◉"), theme::BLOOD);
+                }
+            }
         }
         self.verdict = Some(verdict);
     }
