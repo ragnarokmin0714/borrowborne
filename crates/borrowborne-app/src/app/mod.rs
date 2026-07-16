@@ -44,6 +44,10 @@ pub struct BorrowborneApp {
     /// instead of waiting for eframe's autosave tick, so a crash right
     /// after a pass (or a death) can never eat the verdict.
     dirty: bool,
+    /// Hint tiers revealed for the current puzzle. Resets on puzzle
+    /// change and on restart — hints re-seal themselves; only progress
+    /// is forever.
+    hints_shown: usize,
 
     fx: Fx,
 }
@@ -89,6 +93,7 @@ impl BorrowborneApp {
             cast_rx: None,
             cast_origin: egui::pos2(0.0, 0.0),
             dirty: false,
+            hints_shown: 0,
             fx: Fx::default(),
         }
     }
@@ -190,6 +195,7 @@ impl BorrowborneApp {
         }
         self.code = self.current_puzzle().starter_code.clone();
         self.verdict = None;
+        self.hints_shown = 0;
     }
 
     /// Whether a step in the given direction leads anywhere.

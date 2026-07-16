@@ -44,6 +44,13 @@ impl Lang {
     pub const ALL: [Lang; 3] = [Lang::En, Lang::ZhHant, Lang::Ja];
 }
 
+/// One compiler error code, performed: an in-world line an NPC speaks,
+/// plus a plain-language note about what actually went wrong.
+pub struct Voice {
+    pub line: &'static str,
+    pub note: &'static str,
+}
+
 /// All user-facing UI strings for one language.
 pub struct Tr {
     // Chrome.
@@ -72,4 +79,38 @@ pub struct Tr {
     pub verdict_death_body: &'static str,
     pub verdict_timeout_title: &'static str,
     pub verdict_timeout_body: &'static str,
+
+    // Hints.
+    pub hint_whisper: &'static str,
+    pub hint_exhausted: &'static str,
+
+    // Raw compiler output disclosure.
+    pub raw_diagnostic: &'static str,
+
+    // The most common compiler errors, performed as NPC dialogue.
+    pub e0382: Voice, // use of moved value
+    pub e0384: Voice, // assign twice to immutable
+    pub e0308: Voice, // mismatched types
+    pub e0369: Voice, // operator not supported between types
+    pub e0499: Voice, // two mutable borrows
+    pub e0502: Voice, // mutable + shared borrow clash
+    pub e0106: Voice, // missing lifetime
+    pub e0425: Voice, // unresolved name
+}
+
+impl Tr {
+    /// The in-world voice for a compiler error code, if we know it.
+    pub fn voice_for(&self, code: &str) -> Option<&Voice> {
+        Some(match code {
+            "E0382" => &self.e0382,
+            "E0384" => &self.e0384,
+            "E0308" => &self.e0308,
+            "E0369" => &self.e0369,
+            "E0499" => &self.e0499,
+            "E0502" => &self.e0502,
+            "E0106" => &self.e0106,
+            "E0425" => &self.e0425,
+            _ => return None,
+        })
+    }
 }

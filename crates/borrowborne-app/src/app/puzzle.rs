@@ -36,8 +36,38 @@ fn scene_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
                 }
             });
             ui.add_space(6.0);
+            let hints = app.current_puzzle().hints.clone();
             egui::ScrollArea::vertical().show(ui, |ui| {
                 ui.label(RichText::new(scene).size(14.0));
+
+                if hints.is_empty() {
+                    return;
+                }
+                ui.add_space(10.0);
+                ui.separator();
+                // Revealed tiers stay visible; the lantern offers the
+                // next one until it runs out of things to say.
+                for hint in hints.iter().take(app.hints_shown) {
+                    ui.label(
+                        RichText::new(format!("🕯 {hint}"))
+                            .italics()
+                            .color(RUNE_GOLD),
+                    );
+                    ui.add_space(2.0);
+                }
+                if app.hints_shown < hints.len() {
+                    let label = format!(
+                        "{} ({}/{})",
+                        tr.hint_whisper,
+                        app.hints_shown + 1,
+                        hints.len()
+                    );
+                    if ui.button(label).clicked() {
+                        app.hints_shown += 1;
+                    }
+                } else {
+                    ui.label(RichText::new(tr.hint_exhausted).weak().small());
+                }
             });
         });
 }

@@ -1,4 +1,4 @@
-use super::Tr;
+use super::{Tr, Voice};
 
 pub static EN: Tr = Tr {
     language: "Language",
@@ -24,4 +24,42 @@ pub static EN: Tr = Tr {
     verdict_death_body: "Your spell panicked. The night claims another hunter.",
     verdict_timeout_title: "Lost in the loop",
     verdict_timeout_body: "Your spell wandered past the time the world allows.",
+
+    hint_whisper: "🕯 Ask the lantern",
+    hint_exhausted: "The lantern has no more to say.",
+
+    raw_diagnostic: "The raw words of the world",
+
+    e0382: Voice {
+        line: "“You gave that away, hunter. What is given is gone.”",
+        note: "A value was moved: after ownership transfers, the old name is dead. Lend it with & instead, or forge a twin with .clone().",
+    },
+    e0384: Voice {
+        line: "“That vow was carved immutable. It will not bend twice.”",
+        note: "You assigned twice to an immutable binding. Declare it `let mut` if it was made to change.",
+    },
+    e0308: Voice {
+        line: "“You promised one thing and brought another.”",
+        note: "Mismatched types: the expected type and the actual type disagree. Check what the signature (or the other branch) demands.",
+    },
+    e0369: Voice {
+        line: "“Those two were never meant to be joined.”",
+        note: "This operator does not work between these types — often words (&str) where a number was needed. Convert or rebind first.",
+    },
+    e0499: Voice {
+        line: "“Two hands on one blade — one of you lets go, or the blade decides.”",
+        note: "Two mutable borrows of the same value at once. Only one exclusive grip may exist; end one before taking the other.",
+    },
+    e0502: Voice {
+        line: "“They are still reading, hunter. You do not rewrite a page under a reader's eyes.”",
+        note: "A mutable borrow while shared borrows are alive. Let the readers finish (end the & borrows) before you take &mut.",
+    },
+    e0106: Voice {
+        line: "“How long must this promise hold? The world demands you say it.”",
+        note: "A reference needs a lifetime the compiler cannot infer. Name one (<'a>) so the borrow's span is spelled out.",
+    },
+    e0425: Voice {
+        line: "“No one of that name lives here.”",
+        note: "Unresolved name: it was never declared, or it is spelled differently. Check for typos and missing `let`/`fn`.",
+    },
 };
