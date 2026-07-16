@@ -21,6 +21,12 @@ All notable changes to Borrowborne are documented here. Format follows
   LOST; a pass slashes the bar, drains it, and floats the echo gain;
   a panic floats the echoes you dropped. Presentation only — every
   outcome is still decided solely by the compiler.
+- **Run curses** (`content/curses.ron`, data-driven): every run rolls
+  one modifier — Curse of the Twinless (no `.clone()`), Curse of
+  Certainty (no `.unwrap()`), Curse of Poverty (2-echo tax per cast).
+  A refused cast floats CURSED and never reaches the judge; whatever
+  compiles is judged exactly as ever. The run's curse shows in the
+  top bar (hover for its rules) and rerolls when the run ends.
 
 ## [0.3.0] - 2026-07-16
 

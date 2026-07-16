@@ -37,6 +37,9 @@ pub static JA: Tr = Tr {
     combat_miss: "空振り",
     combat_blocked: "防がれた",
     combat_lost: "迷失",
+    combat_cursed: "呪縛",
+
+    curse_label: "呪い",
 
     e0382: Voice {
         line: "「渡したものだ、狩人よ。手放したものは戻らぬ。」",

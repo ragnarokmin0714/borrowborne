@@ -6,11 +6,13 @@
 
 pub mod constants;
 pub mod curriculum;
+pub mod curse;
 pub mod error;
 pub mod progress;
 pub mod verdict;
 
 pub use curriculum::{Chapter, Concept, Curriculum, Puzzle};
+pub use curse::{Curse, CurseBook, CurseEffect};
 pub use error::CoreError;
 pub use progress::{Bloodstain, Progress};
 pub use verdict::Verdict;

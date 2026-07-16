@@ -50,8 +50,10 @@ who want the true roguelike covenant.
       counterattack (death flash + dropped-echo float). Presentation
       only — the judge stays the compiler.
 - [ ] Learned concepts unlock skill animations.
-- [ ] Curse modifiers per run (data-driven): "no `.clone()` this run",
-      "unwrap kills instantly", randomized trial inputs.
+- [x] Curse modifiers per run (data-driven, `content/curses.ron`):
+      forbid-snippet curses (no `.clone()`, no `.unwrap()`) and a
+      per-cast echo tax; rerolled when the run ends.
+- [ ] More curse effects: randomized trial inputs, heavier deaths.
 - [ ] Map screen: region nodes, lock/unlock states.
 - [ ] Enum Town: `struct` / `enum` / exhaustive `match`.
 - [ ] Result Swamp: `Option` / `Result` / `?`.

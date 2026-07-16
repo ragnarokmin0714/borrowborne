@@ -96,6 +96,10 @@ pub struct Tr {
     pub combat_miss: &'static str,
     pub combat_blocked: &'static str,
     pub combat_lost: &'static str,
+    pub combat_cursed: &'static str,
+
+    // Run curse.
+    pub curse_label: &'static str,
 
     // The most common compiler errors, performed as NPC dialogue.
     pub e0382: Voice, // use of moved value

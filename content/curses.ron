@@ -1,0 +1,27 @@
+// Run curses — one is rolled at the start of every run.
+//
+// Curses bend the rules of a run, never the judge: a cast may be
+// refused or taxed before compiling, but whatever reaches the
+// compiler is judged exactly as ever.
+(
+    curses: [
+        (
+            id: "curse-of-the-twinless",
+            name: "Curse of the Twinless",
+            blurb: "No twin shall be forged: `.clone()` is forbidden this run. Find another way — or buy your freedom with death.",
+            effect: ForbidSnippet(".clone()"),
+        ),
+        (
+            id: "curse-of-certainty",
+            name: "Curse of Certainty",
+            blurb: "False certainty is forbidden: `.unwrap()` never leaves your lips this run. Handle your doubts properly.",
+            effect: ForbidSnippet(".unwrap()"),
+        ),
+        (
+            id: "curse-of-poverty",
+            name: "Curse of Poverty",
+            blurb: "The night taxes every incantation: each cast costs 2 echoes, hit or miss.",
+            effect: EchoTax(2),
+        ),
+    ],
+)

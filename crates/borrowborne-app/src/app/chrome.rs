@@ -36,6 +36,14 @@ pub fn top_bar(app: &mut BorrowborneApp, ctx: &egui::Context) {
 
                 ui.separator();
 
+                // The night's curse; hover for its rules.
+                if let Some(curse) = app.active_curse() {
+                    ui.label(RichText::new(format!("🜏 {}", curse.name)).color(RUNE_GOLD))
+                        .on_hover_text(&curse.blurb);
+                    ui.label(RichText::new(tr.curse_label).weak());
+                    ui.separator();
+                }
+
                 // The purse, and the stain if echoes lie somewhere.
                 ui.label(
                     RichText::new(format!("◉ {}", app.progress.echoes))

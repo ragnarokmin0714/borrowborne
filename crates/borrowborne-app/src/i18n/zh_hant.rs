@@ -37,6 +37,9 @@ pub static ZH: Tr = Tr {
     combat_miss: "揮空",
     combat_blocked: "被格擋",
     combat_lost: "迷失",
+    combat_cursed: "受詛",
+
+    curse_label: "詛咒",
 
     e0382: Voice {
         line: "「你已把它交出去了，獵人。給出去的，就不再回來。」",

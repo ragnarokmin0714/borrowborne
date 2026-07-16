@@ -10,7 +10,7 @@ use eframe::egui;
 
 use borrowborne_core::constants::CHAPTERS_DIR;
 use borrowborne_core::curriculum::{load_dir, parse_chapter};
-use borrowborne_core::{Curriculum, Progress, Verdict};
+use borrowborne_core::{Curriculum, Curse, CurseBook, Progress, Verdict};
 #[cfg(not(target_arch = "wasm32"))]
 use borrowborne_runner::{RustcLocal, Sandbox};
 
@@ -27,8 +27,13 @@ const EMBEDDED_CHAPTERS: &[&str] = &[
     include_str!("../../../../content/chapters/02-ownership-forest.ron"),
 ];
 
+/// Curse book, embedded for the same reason as the chapters. Disk
+/// wins when present.
+const EMBEDDED_CURSES: &str = include_str!("../../../../content/curses.ron");
+
 pub struct BorrowborneApp {
     curriculum: Curriculum,
+    curse_book: CurseBook,
     progress: Progress,
     lang: Lang,
 
@@ -69,6 +74,7 @@ impl BorrowborneApp {
                 app.lang = l;
             }
         }
+        app.ensure_curse();
         theme::apply(&cc.egui_ctx);
         fonts::apply(&cc.egui_ctx, &fonts::load_cjk());
         app
@@ -83,9 +89,16 @@ impl BorrowborneApp {
                 .collect();
             Curriculum { chapters }
         });
+        let curse_book = std::fs::read_to_string("content/curses.ron")
+            .ok()
+            .and_then(|text| CurseBook::parse(&text, "content/curses.ron").ok())
+            .unwrap_or_else(|| {
+                CurseBook::parse(EMBEDDED_CURSES, "embedded").expect("embedded curses must parse")
+            });
         let code = curriculum.chapters[0].puzzles[0].starter_code.clone();
-        Self {
+        let mut app = Self {
             curriculum,
+            curse_book,
             progress: Progress::default(),
             lang: Lang::default(),
             chapter_ix: 0,
@@ -98,7 +111,35 @@ impl BorrowborneApp {
             dirty: false,
             hints_shown: 0,
             fx: Fx::default(),
+        };
+        app.ensure_curse();
+        app
+    }
+
+    /// The active curse, if the save's id is still in the book.
+    pub fn active_curse(&self) -> Option<&Curse> {
+        self.progress
+            .active_curse
+            .as_deref()
+            .and_then(|id| self.curse_book.get(id))
+    }
+
+    /// Roll a curse when none is active (fresh save, or content
+    /// removed the one we had). Seeded from run statistics — cheap
+    /// entropy that works on wasm too, where `SystemTime` panics.
+    fn ensure_curse(&mut self) {
+        if self.active_curse().is_some() {
+            return;
         }
+        self.reroll_curse();
+    }
+
+    /// A new night, a new moon: pick the next run's curse.
+    fn reroll_curse(&mut self) {
+        let seed = self.progress.total_deaths as u64 * 31
+            + self.progress.solved.len() as u64 * 7
+            + self.progress.echoes;
+        self.progress.active_curse = self.curse_book.roll(seed).map(|c| c.id.clone());
     }
 
     pub fn current_puzzle(&self) -> &borrowborne_core::Puzzle {
@@ -117,6 +158,25 @@ impl BorrowborneApp {
     fn cast(&mut self, ctx: &egui::Context) {
         if self.casting() {
             return;
+        }
+        // The curse strikes before the judge is even summoned: a
+        // refusal never compiles; a tax is paid win or lose.
+        if let Some(curse) = self.active_curse().cloned() {
+            if let Some(refusal) = curse.refusal(&self.code) {
+                let tr = self.lang.strings();
+                self.fx.float_text(
+                    self.encounter_bar.center_top(),
+                    tr.combat_cursed,
+                    theme::BLOOD,
+                );
+                self.verdict = Some(Verdict::CompileError(refusal));
+                return;
+            }
+            let tax = curse.cast_tax();
+            if tax > 0 {
+                self.progress.echoes = self.progress.echoes.saturating_sub(tax);
+                self.dirty = true;
+            }
         }
         let (tx, rx) = mpsc::channel();
         self.cast_rx = Some(rx);
@@ -162,7 +222,11 @@ impl BorrowborneApp {
         let puzzle = self.current_puzzle();
         let (id, concepts) = (puzzle.id.clone(), puzzle.concepts.clone());
         let purse_before = self.progress.echoes;
-        self.progress.record(&id, &concepts, &verdict);
+        let run_ended = self.progress.record(&id, &concepts, &verdict);
+        if run_ended {
+            // The run is over; the next night rises under a new moon.
+            self.reroll_curse();
+        }
         self.dirty = true;
 
         // Combat theater: the verdict decides, these only perform it.

@@ -37,6 +37,9 @@ pub static EN: Tr = Tr {
     combat_miss: "MISS",
     combat_blocked: "BLOCKED",
     combat_lost: "LOST",
+    combat_cursed: "CURSED",
+
+    curse_label: "curse",
 
     e0382: Voice {
         line: "“You gave that away, hunter. What is given is gone.”",

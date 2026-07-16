@@ -46,6 +46,11 @@ pub struct Progress {
     /// Echoes dropped at the puzzle where the hunter last died.
     #[serde(default)]
     pub bloodstain: Option<Bloodstain>,
+    /// Id of the run's active curse. Rolled by the app at run start
+    /// and rerolled when a run ends; validated against the curse book
+    /// on load.
+    #[serde(default)]
+    pub active_curse: Option<String>,
 }
 
 fn starting_echoes() -> u64 {
@@ -61,6 +66,7 @@ impl Default for Progress {
             total_deaths: 0,
             echoes: STARTING_ECHOES,
             bloodstain: None,
+            active_curse: None,
         }
     }
 }
