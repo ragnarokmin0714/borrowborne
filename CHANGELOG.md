@@ -5,6 +5,14 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **World map**: the game now opens on "The Night Lands" — one node
+  per region joined by a night road, each showing its progress.
+  Entering a region lands on its first unsolved door. Later regions
+  are sealed until 70% of the region before them is solved; prev/next
+  navigation respects the seals.
+
 ## [0.4.0] - 2026-07-16
 
 ### Added

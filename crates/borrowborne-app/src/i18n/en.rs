@@ -41,6 +41,11 @@ pub static EN: Tr = Tr {
 
     curse_label: "curse",
 
+    map_title: "The Night Lands",
+    map_button: "🗺 Map",
+    map_enter: "Enter",
+    map_locked_hint: "Sealed — clear more of the region before it.",
+
     e0382: Voice {
         line: "“You gave that away, hunter. What is given is gone.”",
         note: "A value was moved: after ownership transfers, the old name is dead. Lend it with & instead, or forge a twin with .clone().",

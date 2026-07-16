@@ -6,9 +6,8 @@ use borrowborne_app::app::BorrowborneApp;
 use borrowborne_app::i18n::Lang;
 use eframe::egui;
 
-fn probe(size: egui::Vec2) {
+fn probe_app(app: &mut BorrowborneApp, size: egui::Vec2) {
     let ctx = egui::Context::default();
-    let mut app = BorrowborneApp::headless();
     let input = egui::RawInput {
         screen_rect: Some(egui::Rect::from_min_size(egui::Pos2::ZERO, size)),
         ..Default::default()
@@ -17,6 +16,15 @@ fn probe(size: egui::Vec2) {
     for _ in 0..2 {
         let _ = ctx.run(input.clone(), |ctx| app.draw(ctx));
     }
+}
+
+/// Both screens, at the given size: the map (headless default) and a
+/// puzzle entered from it.
+fn probe(size: egui::Vec2) {
+    let mut app = BorrowborneApp::headless();
+    probe_app(&mut app, size);
+    app.enter_chapter(0);
+    probe_app(&mut app, size);
 }
 
 #[test]

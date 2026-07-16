@@ -156,6 +156,49 @@ fn save_format_stays_small_learned_is_not_serialized() {
 }
 
 #[test]
+fn chapters_unseal_at_the_threshold() {
+    // Ten puzzles in chapter 0, one in chapter 1.
+    let mk = |id: &str| Puzzle {
+        id: id.into(),
+        title: String::new(),
+        scene: String::new(),
+        concepts: vec![Concept::Variables],
+        starter_code: String::new(),
+        trial: "TRIAL:".into(),
+        hints: vec![],
+        solution: String::new(),
+    };
+    let cur = Curriculum {
+        chapters: vec![
+            Chapter {
+                id: "a".into(),
+                name: String::new(),
+                tagline: String::new(),
+                puzzles: (0..10).map(|i| mk(&format!("a-{i}"))).collect(),
+            },
+            Chapter {
+                id: "b".into(),
+                name: String::new(),
+                tagline: String::new(),
+                puzzles: vec![mk("b-0")],
+            },
+        ],
+    };
+
+    let mut p = Progress::default();
+    assert!(p.chapter_unlocked(&cur, 0), "the first region is open");
+    assert!(!p.chapter_unlocked(&cur, 1));
+
+    for i in 0..6 {
+        p.record(&format!("a-{i}"), &[], &Verdict::Passed);
+    }
+    assert!(!p.chapter_unlocked(&cur, 1), "6/10 < 70%");
+    p.record("a-6", &[], &Verdict::Passed);
+    assert!(p.chapter_unlocked(&cur, 1), "7/10 breaks the seal");
+    assert!(!p.chapter_unlocked(&cur, 2), "past the end stays sealed");
+}
+
+#[test]
 fn panic_costs_a_life_and_run_resets() {
     let mut p = Progress::default();
     for i in 0..LIVES_PER_RUN - 1 {

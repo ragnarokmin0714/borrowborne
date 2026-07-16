@@ -16,6 +16,9 @@ pub fn top_bar(app: &mut BorrowborneApp, ctx: &egui::Context) {
         ui.horizontal(|ui| {
             ui.label(RichText::new(APP_NAME).strong().size(20.0).color(BLOOD));
             ui.label(RichText::new(APP_TAGLINE).italics().weak());
+            if ui.button(tr.map_button).clicked() {
+                app.show_map();
+            }
 
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 egui::ComboBox::from_id_source("lang")

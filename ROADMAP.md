@@ -54,7 +54,8 @@ who want the true roguelike covenant.
       forbid-snippet curses (no `.clone()`, no `.unwrap()`) and a
       per-cast echo tax; rerolled when the run ends.
 - [ ] More curse effects: randomized trial inputs, heavier deaths.
-- [ ] Map screen: region nodes, lock/unlock states.
+- [x] Map screen: region nodes, seals break at 70% of the previous
+      region; the game opens on the map.
 - [ ] Enum Town: `struct` / `enum` / exhaustive `match`.
 - [ ] Result Swamp: `Option` / `Result` / `?`.
 

@@ -4,7 +4,9 @@ use std::collections::HashSet;
 
 use serde::{Deserialize, Serialize};
 
-use crate::constants::{ECHOES_PER_SOLVE, HINT_COSTS, LIVES_PER_RUN, STARTING_ECHOES};
+use crate::constants::{
+    CHAPTER_UNLOCK_FRACTION, ECHOES_PER_SOLVE, HINT_COSTS, LIVES_PER_RUN, STARTING_ECHOES,
+};
 use crate::curriculum::{Concept, Curriculum};
 use crate::verdict::Verdict;
 
@@ -158,6 +160,31 @@ impl Progress {
         }
         self.echoes -= cost;
         true
+    }
+
+    /// Puzzles solved within one chapter.
+    pub fn solved_in(&self, chapter: &crate::Chapter) -> usize {
+        chapter
+            .puzzles
+            .iter()
+            .filter(|p| self.solved.contains(&p.id))
+            .count()
+    }
+
+    /// Whether a region's seal is broken. The first region is always
+    /// open; each later one needs [`CHAPTER_UNLOCK_FRACTION`] of the
+    /// region before it solved.
+    pub fn chapter_unlocked(&self, curriculum: &Curriculum, ix: usize) -> bool {
+        if ix == 0 {
+            return true;
+        }
+        let Some(prev) = curriculum.chapters.get(ix - 1) else {
+            return false;
+        };
+        if prev.puzzles.is_empty() {
+            return true;
+        }
+        self.solved_in(prev) as f32 / prev.puzzles.len() as f32 >= CHAPTER_UNLOCK_FRACTION
     }
 
     /// Lives remaining in the current run.

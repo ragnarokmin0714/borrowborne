@@ -1,6 +1,7 @@
 //! The Borrowborne application: state, the frame loop, and casting.
 
 mod chrome;
+mod map;
 mod puzzle;
 mod verdict_view;
 
@@ -31,11 +32,21 @@ const EMBEDDED_CHAPTERS: &[&str] = &[
 /// wins when present.
 const EMBEDDED_CURSES: &str = include_str!("../../../../content/curses.ron");
 
+/// Which view fills the central area.
+#[derive(Clone, Copy, PartialEq)]
+enum Screen {
+    /// The world map: region nodes, seals, entry points.
+    Map,
+    /// One puzzle: scene, editor, verdicts.
+    Puzzle,
+}
+
 pub struct BorrowborneApp {
     curriculum: Curriculum,
     curse_book: CurseBook,
     progress: Progress,
     lang: Lang,
+    screen: Screen,
 
     chapter_ix: usize,
     puzzle_ix: usize,
@@ -101,6 +112,7 @@ impl BorrowborneApp {
             curse_book,
             progress: Progress::default(),
             lang: Lang::default(),
+            screen: Screen::Map,
             chapter_ix: 0,
             puzzle_ix: 0,
             code,
@@ -265,8 +277,36 @@ impl BorrowborneApp {
         self.verdict = Some(verdict);
     }
 
+    /// Back to the world map.
+    pub fn show_map(&mut self) {
+        self.screen = Screen::Map;
+    }
+
+    /// Enter a region from the map: land on its first unsolved door
+    /// (or the first door when all are open).
+    pub fn enter_chapter(&mut self, ix: usize) {
+        if ix >= self.curriculum.chapters.len()
+            || !self.progress.chapter_unlocked(&self.curriculum, ix)
+            || self.casting()
+        {
+            return;
+        }
+        self.chapter_ix = ix;
+        let chapter = &self.curriculum.chapters[ix];
+        self.puzzle_ix = chapter
+            .puzzles
+            .iter()
+            .position(|p| !self.progress.solved.contains(&p.id))
+            .unwrap_or(0);
+        self.screen = Screen::Puzzle;
+        self.code = self.current_puzzle().starter_code.clone();
+        self.verdict = None;
+        self.hints_shown = 0;
+    }
+
     /// Step to the neighboring puzzle, crossing chapter borders: the
-    /// last door of one region leads into the first door of the next.
+    /// last door of one region leads into the first door of the next —
+    /// but a sealed region stays shut.
     fn goto_step(&mut self, forward: bool) {
         if self.casting() {
             return;
@@ -275,7 +315,11 @@ impl BorrowborneApp {
         if forward {
             if self.puzzle_ix + 1 < count {
                 self.puzzle_ix += 1;
-            } else if self.chapter_ix + 1 < self.curriculum.chapters.len() {
+            } else if self
+                .progress
+                .chapter_unlocked(&self.curriculum, self.chapter_ix + 1)
+                && self.chapter_ix + 1 < self.curriculum.chapters.len()
+            {
                 self.chapter_ix += 1;
                 self.puzzle_ix = 0;
             } else {
@@ -298,7 +342,10 @@ impl BorrowborneApp {
     fn can_step(&self, forward: bool) -> bool {
         if forward {
             self.puzzle_ix + 1 < self.curriculum.chapters[self.chapter_ix].puzzles.len()
-                || self.chapter_ix + 1 < self.curriculum.chapters.len()
+                || (self.chapter_ix + 1 < self.curriculum.chapters.len()
+                    && self
+                        .progress
+                        .chapter_unlocked(&self.curriculum, self.chapter_ix + 1))
         } else {
             self.puzzle_ix > 0 || self.chapter_ix > 0
         }
@@ -309,7 +356,10 @@ impl BorrowborneApp {
     pub fn draw(&mut self, ctx: &egui::Context) {
         self.poll_cast();
         chrome::top_bar(self, ctx);
-        puzzle::central(self, ctx);
+        match self.screen {
+            Screen::Map => map::central(self, ctx),
+            Screen::Puzzle => puzzle::central(self, ctx),
+        }
         self.fx.tick(ctx);
     }
 }

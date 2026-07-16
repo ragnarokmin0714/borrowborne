@@ -101,6 +101,12 @@ pub struct Tr {
     // Run curse.
     pub curse_label: &'static str,
 
+    // World map.
+    pub map_title: &'static str,
+    pub map_button: &'static str,
+    pub map_enter: &'static str,
+    pub map_locked_hint: &'static str,
+
     // The most common compiler errors, performed as NPC dialogue.
     pub e0382: Voice, // use of moved value
     pub e0384: Voice, // assign twice to immutable

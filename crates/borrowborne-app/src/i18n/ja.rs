@@ -41,6 +41,11 @@ pub static JA: Tr = Tr {
 
     curse_label: "呪い",
 
+    map_title: "夜の国",
+    map_button: "🗺 地図",
+    map_enter: "入る",
+    map_locked_hint: "封印中——前の地域をさらに踏破せよ。",
+
     e0382: Voice {
         line: "「渡したものだ、狩人よ。手放したものは戻らぬ。」",
         note: "値はムーブされた：所有権が移れば、古い名は死ぬ。& で貸すか、.clone() で双子を鍛えよ。",

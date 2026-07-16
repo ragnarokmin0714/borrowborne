@@ -41,3 +41,7 @@ pub const ECHOES_PER_SOLVE: u64 = 25;
 
 /// Cost of each hint tier: the vaguer the whisper, the cheaper.
 pub const HINT_COSTS: [u64; 3] = [5, 10, 20];
+
+/// Fraction of a region's puzzles that must be solved before the next
+/// region unseals. 0.7 leaves room to skip a wall without grinding.
+pub const CHAPTER_UNLOCK_FRACTION: f32 = 0.7;

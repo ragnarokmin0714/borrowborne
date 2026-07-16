@@ -41,6 +41,11 @@ pub static ZH: Tr = Tr {
 
     curse_label: "詛咒",
 
+    map_title: "長夜之地",
+    map_button: "🗺 地圖",
+    map_enter: "進入",
+    map_locked_hint: "封印中——先攻克前一個區域。",
+
     e0382: Voice {
         line: "「你已把它交出去了，獵人。給出去的，就不再回來。」",
         note: "值已被移動：所有權轉移後，舊的名字就死了。改用 & 借出，或用 .clone() 鑄一個雙生子。",
