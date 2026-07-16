@@ -5,6 +5,8 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-16
+
 ### Added
 
 - **Blood echoes**: first-solving a puzzle pays 25 echoes; hunters
