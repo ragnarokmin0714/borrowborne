@@ -10,11 +10,18 @@ use crate::verdict::Verdict;
 
 /// Persistent player progress. Serialized by the app via eframe's
 /// persistence; core only defines the shape and the rules.
+///
+/// The save stays deliberately small: only solved ids and death
+/// counters go to disk. Anything derivable — like `learned` — is
+/// recomputed by [`Progress::rebuild`] on load, which doubles as
+/// corruption recovery (stale ids dropped, counters clamped).
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Progress {
-    /// Ids of solved puzzles.
+    /// Ids of solved puzzles. The single source of truth on disk.
     pub solved: HashSet<String>,
-    /// Concepts learned (union of solved puzzles' concepts).
+    /// Concepts learned (union of solved puzzles' concepts). Derived —
+    /// never serialized; [`Progress::rebuild`] restores it on load.
+    #[serde(skip)]
     pub learned: HashSet<Concept>,
     /// Deaths in the current run.
     pub deaths: u32,
@@ -23,6 +30,27 @@ pub struct Progress {
 }
 
 impl Progress {
+    /// Reconcile a loaded save with the current curriculum. Call once
+    /// after deserializing, before play:
+    ///
+    /// - drops solved ids the curriculum no longer knows (renamed or
+    ///   removed content, or a corrupt entry),
+    /// - recomputes `learned` from what remains (it is never saved),
+    /// - clamps death counters a bad save could have inflated.
+    pub fn rebuild(&mut self, curriculum: &Curriculum) {
+        self.solved.retain(|id| curriculum.puzzle(id).is_some());
+        self.learned = self
+            .solved
+            .iter()
+            .filter_map(|id| curriculum.puzzle(id))
+            .flat_map(|p| p.concepts.iter().copied())
+            .collect();
+        // A run's deaths are always below the reset threshold; anything
+        // else is save damage, not history.
+        self.deaths = self.deaths.min(LIVES_PER_RUN.saturating_sub(1));
+        self.total_deaths = self.total_deaths.max(self.deaths);
+    }
+
     /// Record a verdict for a puzzle. Returns `true` when this death
     /// ended the run (deaths reached [`LIVES_PER_RUN`]).
     pub fn record(&mut self, puzzle_id: &str, concepts: &[Concept], verdict: &Verdict) -> bool {

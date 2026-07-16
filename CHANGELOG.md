@@ -7,6 +7,21 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ### Added
 
+- Save-on-verdict: progress flushes to disk immediately after each
+  pass/death instead of waiting for eframe's autosave tick.
+- Save hardening: `learned` concepts are no longer serialized (derived
+  from solved puzzles on load), stale puzzle ids from older content are
+  dropped, and death counters are clamped — a corrupt or outdated save
+  self-heals instead of poisoning a run.
+
+## [0.2.0] - 2026-07-16
+
+Note: the `v0.2.0` tag was cut while the workspace still said `0.1.0`,
+so its binaries report v0.1.0 in the window title. Release checklist
+since then: **bump `workspace.package.version` before tagging.**
+
+### Added
+
 - Web build: the app compiles to `wasm32-unknown-unknown` and runs in
   the browser (trunk + eframe `WebRunner`); spells are judged by the
   official Rust Playground's execute API since no local `rustc` exists
@@ -21,7 +36,7 @@ All notable changes to Borrowborne are documented here. Format follows
 ### Known limitations
 
 - Web build ships without a CJK font: Traditional Chinese / Japanese
-  chrome shows placeholder glyphs in the browser.
+  chrome shows placeholder glyphs in the browser (accepted for now).
 
 ## [0.1.0] - 2026-07-16
 

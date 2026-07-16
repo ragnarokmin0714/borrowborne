@@ -167,7 +167,7 @@ dependencies = [
 
 [[package]]
 name = "borrowborne-app"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "borrowborne-core",
  "borrowborne-runner",
@@ -180,16 +180,17 @@ dependencies = [
 
 [[package]]
 name = "borrowborne-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "ron",
  "serde",
+ "serde_json",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "borrowborne-runner"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "borrowborne-core",
  "serde",

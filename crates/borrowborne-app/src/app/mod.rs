@@ -49,6 +49,10 @@ impl BorrowborneApp {
         if let Some(storage) = cc.storage {
             if let Some(p) = eframe::get_value(storage, "progress") {
                 app.progress = p;
+                // A corrupt save deserializes to None and we start
+                // fresh; a *stale* one (old content, bad counters)
+                // gets reconciled instead of poisoning the run.
+                app.progress.rebuild(&app.curriculum);
             }
             if let Some(l) = eframe::get_value(storage, "lang") {
                 app.lang = l;
