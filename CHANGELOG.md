@@ -5,6 +5,8 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-17
+
 ### Added
 
 - **World map**: the game now opens on "The Night Lands" — one node
