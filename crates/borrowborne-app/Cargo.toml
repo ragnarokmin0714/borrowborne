@@ -28,3 +28,7 @@ serde = { workspace = true }
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 ehttp = "0.5"
 wasm-bindgen-futures = "0.4"
+
+[dev-dependencies]
+# Parses the embedded subset font to prove it covers the i18n strings.
+ttf-parser = "0.21"

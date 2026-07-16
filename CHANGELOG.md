@@ -19,6 +19,13 @@ All notable changes to Borrowborne are documented here. Format follows
   death opens the region), `match` on `Option`, `Result` answering,
   `?` on `Result` and on `Option`, and the Swamp Heart boss
   (`map_err` + `?` + guard). 25 puzzles, 4 regions total.
+- **CJK on the web**: a ~104 KiB subset of Noto Sans CJK TC (SIL OFL)
+  is embedded as the universal last font fallback — Traditional
+  Chinese and Japanese chrome now renders in the browser. The subset
+  carries every glyph the i18n strings use plus the kana and
+  fullwidth ranges; `assets/make_cjk_subset.py` regenerates it and a
+  coverage test fails if any i18n character lacks a glyph. Native
+  builds still prefer a full system CJK font when present.
 
 ## [0.4.0] - 2026-07-16
 

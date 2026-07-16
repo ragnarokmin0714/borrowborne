@@ -83,5 +83,6 @@ who want the true roguelike covenant.
       third-party chapter content.
 - [ ] Hidden region: macros / `unsafe`.
 - [ ] Skill-tree journal view; achievements; run statistics.
-- [ ] Subset a CJK font for the web build (zh-Hant/ja chrome glyphs).
+- [x] Subset a CJK font for the web build (zh-Hant/ja chrome glyphs) —
+      ~104 KiB embedded, coverage-tested.
 - [ ] Steam-deckable packaging.
