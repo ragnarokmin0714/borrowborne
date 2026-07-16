@@ -5,6 +5,18 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Blood echoes**: first-solving a puzzle pays 25 echoes; hunters
+  start with 30. On death the whole purse drops as a bloodstain at
+  the puzzle where you fell — pass that trial to reclaim it. Dying
+  again while holding echoes replaces the old stain (those echoes are
+  gone); dying empty-handed spares it. Content edits never steal: a
+  stain on a removed puzzle refunds on load.
+- **Hints now cost echoes** (5 / 10 / 20 per tier); the lantern
+  refuses the broke. The purse and any distant stain show in the top
+  bar; a stain at the current door is called out in the scene.
+
 ## [0.3.0] - 2026-07-16
 
 ### Added

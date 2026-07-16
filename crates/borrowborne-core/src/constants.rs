@@ -30,3 +30,14 @@ pub const RUN_TIMEOUT_SECS: u64 = 5;
 /// How many deaths a run tolerates before the roguelike reset. Kept
 /// generous while the content pool is small.
 pub const LIVES_PER_RUN: u32 = 7;
+
+/// Echoes a hunter starts with — never empty-handed, so the first
+/// hint tiers are affordable before the first gate opens.
+pub const STARTING_ECHOES: u64 = 30;
+
+/// Echoes earned the first time a puzzle is solved. Re-solving an
+/// open gate earns nothing; knowledge is its own reward.
+pub const ECHOES_PER_SOLVE: u64 = 25;
+
+/// Cost of each hint tier: the vaguer the whisper, the cheaper.
+pub const HINT_COSTS: [u64; 3] = [5, 10, 20];

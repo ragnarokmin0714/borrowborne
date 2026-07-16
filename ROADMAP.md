@@ -41,9 +41,9 @@ who want the true roguelike covenant.
 
 ## 0.3 — Addictive: blood echoes, combat skin, curses
 
-- [ ] Blood echoes: currency dropped on pass; **your echoes drop where
+- [x] Blood echoes: currency dropped on pass; **your echoes drop where
       you die** — re-solve the puzzle to reclaim them (the corpse run is
-      "go face your bug").
+      "go face your bug"). Hints are the first echo sink (5/10/20).
 - [ ] Combat presentation over the same verdicts: monster HP bars,
       compile error = whiff, trial failed = blocked, pass = kill;
       learned concepts unlock skill animations. Presentation only — the

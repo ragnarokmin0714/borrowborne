@@ -4,18 +4,29 @@ use std::collections::HashSet;
 
 use serde::{Deserialize, Serialize};
 
-use crate::constants::LIVES_PER_RUN;
+use crate::constants::{ECHOES_PER_SOLVE, HINT_COSTS, LIVES_PER_RUN, STARTING_ECHOES};
 use crate::curriculum::{Concept, Curriculum};
 use crate::verdict::Verdict;
+
+/// Blood echoes lying where a hunter died — Bloodborne rules:
+/// re-solve that puzzle to reclaim them; die again holding echoes and
+/// the new stain replaces this one, the old echoes lost forever.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Bloodstain {
+    /// Puzzle where the hunter fell.
+    pub puzzle_id: String,
+    /// Echoes waiting to be reclaimed.
+    pub amount: u64,
+}
 
 /// Persistent player progress. Serialized by the app via eframe's
 /// persistence; core only defines the shape and the rules.
 ///
-/// The save stays deliberately small: only solved ids and death
-/// counters go to disk. Anything derivable — like `learned` — is
-/// recomputed by [`Progress::rebuild`] on load, which doubles as
-/// corruption recovery (stale ids dropped, counters clamped).
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+/// The save stays deliberately small: solved ids, death counters and
+/// the echo purse. Anything derivable — like `learned` — is recomputed
+/// by [`Progress::rebuild`] on load, which doubles as corruption
+/// recovery (stale ids dropped, counters clamped).
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Progress {
     /// Ids of solved puzzles. The single source of truth on disk.
     pub solved: HashSet<String>,
@@ -27,6 +38,31 @@ pub struct Progress {
     pub deaths: u32,
     /// Total deaths, ever. The tombstone counter.
     pub total_deaths: u32,
+    /// Blood echoes held. Currency for hints (and, later, curses'
+    /// mercy). Old saves without the field start with the default
+    /// purse rather than empty-handed.
+    #[serde(default = "starting_echoes")]
+    pub echoes: u64,
+    /// Echoes dropped at the puzzle where the hunter last died.
+    #[serde(default)]
+    pub bloodstain: Option<Bloodstain>,
+}
+
+fn starting_echoes() -> u64 {
+    STARTING_ECHOES
+}
+
+impl Default for Progress {
+    fn default() -> Self {
+        Self {
+            solved: HashSet::new(),
+            learned: HashSet::new(),
+            deaths: 0,
+            total_deaths: 0,
+            echoes: STARTING_ECHOES,
+            bloodstain: None,
+        }
+    }
 }
 
 impl Progress {
@@ -36,7 +72,10 @@ impl Progress {
     /// - drops solved ids the curriculum no longer knows (renamed or
     ///   removed content, or a corrupt entry),
     /// - recomputes `learned` from what remains (it is never saved),
-    /// - clamps death counters a bad save could have inflated.
+    /// - clamps death counters a bad save could have inflated,
+    /// - clears a bloodstain pointing at a puzzle that no longer exists
+    ///   (the echoes return to the purse — content edits should never
+    ///   steal from the player).
     pub fn rebuild(&mut self, curriculum: &Curriculum) {
         self.solved.retain(|id| curriculum.puzzle(id).is_some());
         self.learned = self
@@ -49,19 +88,46 @@ impl Progress {
         // else is save damage, not history.
         self.deaths = self.deaths.min(LIVES_PER_RUN.saturating_sub(1));
         self.total_deaths = self.total_deaths.max(self.deaths);
+        if let Some(stain) = &self.bloodstain {
+            if curriculum.puzzle(&stain.puzzle_id).is_none() {
+                self.echoes += stain.amount;
+                self.bloodstain = None;
+            }
+        }
     }
 
     /// Record a verdict for a puzzle. Returns `true` when this death
     /// ended the run (deaths reached [`LIVES_PER_RUN`]).
     pub fn record(&mut self, puzzle_id: &str, concepts: &[Concept], verdict: &Verdict) -> bool {
         if verdict.is_pass() {
-            self.solved.insert(puzzle_id.to_owned());
+            // First solve pays; an already-open gate pays nothing.
+            if self.solved.insert(puzzle_id.to_owned()) {
+                self.echoes += ECHOES_PER_SOLVE;
+            }
             self.learned.extend(concepts.iter().copied());
+            // The corpse run: passing the puzzle where you fell
+            // reclaims what you dropped there.
+            if let Some(stain) = &self.bloodstain {
+                if stain.puzzle_id == puzzle_id {
+                    self.echoes += stain.amount;
+                    self.bloodstain = None;
+                }
+            }
             return false;
         }
         if verdict.is_lethal() {
             self.deaths += 1;
             self.total_deaths += 1;
+            // Drop everything you hold where you fell. A new stain
+            // replaces the old one — those echoes are gone for good.
+            // Dying empty-handed leaves no stain and spares the old.
+            if self.echoes > 0 {
+                self.bloodstain = Some(Bloodstain {
+                    puzzle_id: puzzle_id.to_owned(),
+                    amount: self.echoes,
+                });
+                self.echoes = 0;
+            }
             if self.deaths >= LIVES_PER_RUN {
                 // Roguelike reset: the run ends, solved gates stay open
                 // (knowledge survives death — that is the point).
@@ -70,6 +136,22 @@ impl Progress {
             }
         }
         false
+    }
+
+    /// Price of the given hint tier (0-based).
+    pub fn hint_cost(tier: usize) -> u64 {
+        HINT_COSTS.get(tier).copied().unwrap_or(0)
+    }
+
+    /// Buy the given hint tier. Returns `false` (and deducts nothing)
+    /// when the purse cannot cover it.
+    pub fn buy_hint(&mut self, tier: usize) -> bool {
+        let cost = Self::hint_cost(tier);
+        if self.echoes < cost {
+            return false;
+        }
+        self.echoes -= cost;
+        true
     }
 
     /// Lives remaining in the current run.

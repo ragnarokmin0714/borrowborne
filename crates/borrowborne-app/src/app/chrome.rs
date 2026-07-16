@@ -36,6 +36,27 @@ pub fn top_bar(app: &mut BorrowborneApp, ctx: &egui::Context) {
 
                 ui.separator();
 
+                // The purse, and the stain if echoes lie somewhere.
+                ui.label(
+                    RichText::new(format!("◉ {}", app.progress.echoes))
+                        .color(BLOOD)
+                        .strong(),
+                );
+                ui.label(RichText::new(tr.echoes).weak());
+                if let Some(stain) = &app.progress.bloodstain {
+                    let title = app
+                        .curriculum
+                        .puzzle(&stain.puzzle_id)
+                        .map_or(stain.puzzle_id.as_str(), |p| p.title.as_str());
+                    ui.label(
+                        RichText::new(format!("☠ {} — {} {}", stain.amount, tr.stain_away, title))
+                            .color(RUNE_GOLD)
+                            .small(),
+                    );
+                }
+
+                ui.separator();
+
                 ui.label(
                     RichText::new(format!("♰ {}", app.progress.total_deaths))
                         .color(RUNE_GOLD)

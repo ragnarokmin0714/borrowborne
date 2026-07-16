@@ -28,6 +28,10 @@ pub static JA: Tr = Tr {
     hint_whisper: "🕯 ランタンに問う",
     hint_exhausted: "ランタンはもう何も語らない。",
 
+    echoes: "残響",
+    stain_here: "失った残響はここに眠る。試練を越えて取り戻せ。",
+    stain_away: "残響を失った場所：",
+
     raw_diagnostic: "世界の生の言葉",
 
     e0382: Voice {

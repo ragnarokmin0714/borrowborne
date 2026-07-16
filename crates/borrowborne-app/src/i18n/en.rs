@@ -28,6 +28,10 @@ pub static EN: Tr = Tr {
     hint_whisper: "🕯 Ask the lantern",
     hint_exhausted: "The lantern has no more to say.",
 
+    echoes: "echoes",
+    stain_here: "Your lost echoes lie here. Pass the trial to reclaim them.",
+    stain_away: "Echoes lost at",
+
     raw_diagnostic: "The raw words of the world",
 
     e0382: Voice {

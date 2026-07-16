@@ -1,8 +1,9 @@
 //! Progress rules: passes teach, panics kill, runs reset — and saves
-//! stay small and self-healing.
+//! stay small and self-healing. Echo rules follow Bloodborne: drop on
+//! death, reclaim by re-solving, lose the old stain to a new one.
 
-use borrowborne_core::constants::LIVES_PER_RUN;
-use borrowborne_core::{Chapter, Concept, Curriculum, Progress, Puzzle, Verdict};
+use borrowborne_core::constants::{ECHOES_PER_SOLVE, LIVES_PER_RUN, STARTING_ECHOES};
+use borrowborne_core::{Bloodstain, Chapter, Concept, Curriculum, Progress, Puzzle, Verdict};
 
 /// A one-chapter curriculum with a single known puzzle.
 fn tiny_curriculum() -> Curriculum {
@@ -44,6 +45,75 @@ fn compile_error_is_not_lethal() {
 }
 
 #[test]
+fn echoes_flow_earn_once_drop_reclaim_replace() {
+    let mut p = Progress::default();
+    assert_eq!(p.echoes, STARTING_ECHOES);
+
+    // First solve pays; solving the same gate again does not.
+    p.record("of-01", &[], &Verdict::Passed);
+    assert_eq!(p.echoes, STARTING_ECHOES + ECHOES_PER_SOLVE);
+    p.record("of-01", &[], &Verdict::Passed);
+    assert_eq!(p.echoes, STARTING_ECHOES + ECHOES_PER_SOLVE);
+
+    // Death drops the whole purse where the hunter fell.
+    let held = p.echoes;
+    p.record("of-02", &[], &Verdict::Panicked("boom".into()));
+    assert_eq!(p.echoes, 0);
+    assert_eq!(
+        p.bloodstain,
+        Some(Bloodstain {
+            puzzle_id: "of-02".into(),
+            amount: held
+        })
+    );
+
+    // Dying empty-handed does not erase the stain.
+    p.record("of-03", &[], &Verdict::Panicked("boom".into()));
+    assert_eq!(p.bloodstain.as_ref().unwrap().puzzle_id, "of-02");
+
+    // The corpse run: solving where you fell reclaims the echoes
+    // (plus the first-solve reward for the new gate).
+    p.record("of-02", &[], &Verdict::Passed);
+    assert_eq!(p.echoes, held + ECHOES_PER_SOLVE);
+    assert_eq!(p.bloodstain, None);
+
+    // A new death holding echoes replaces any older stain.
+    p.record("of-04", &[], &Verdict::Panicked("boom".into()));
+    p.record("of-01", &[], &Verdict::Passed); // reopen: no pay, no reclaim
+    assert_eq!(p.echoes, 0);
+    p.record("of-05", &[], &Verdict::Passed); // earn fresh echoes
+    p.record("of-05", &[], &Verdict::Panicked("boom".into()));
+    let stain = p.bloodstain.as_ref().unwrap();
+    assert_eq!(stain.puzzle_id, "of-05", "new stain must replace the old");
+    assert_eq!(stain.amount, ECHOES_PER_SOLVE, "old echoes are lost");
+}
+
+#[test]
+fn hints_cost_echoes_and_refuse_the_broke() {
+    let mut p = Progress::default(); // 30 echoes
+    assert!(p.buy_hint(0)); // -5
+    assert!(p.buy_hint(1)); // -10
+    assert_eq!(p.echoes, STARTING_ECHOES - 5 - 10);
+    assert!(!p.buy_hint(2), "20 > 15: the lantern refuses");
+    assert_eq!(p.echoes, 15, "a refused purchase deducts nothing");
+}
+
+#[test]
+fn rebuild_returns_echoes_from_a_stale_stain() {
+    let mut p = Progress {
+        echoes: 10,
+        bloodstain: Some(Bloodstain {
+            puzzle_id: "deleted-puzzle".into(),
+            amount: 40,
+        }),
+        ..Progress::default()
+    };
+    p.rebuild(&tiny_curriculum());
+    assert_eq!(p.bloodstain, None);
+    assert_eq!(p.echoes, 50, "content edits must never steal echoes");
+}
+
+#[test]
 fn rebuild_drops_stale_ids_and_recomputes_learned() {
     let mut p = Progress {
         solved: ["known-puzzle".to_owned(), "deleted-puzzle".to_owned()]
@@ -52,6 +122,7 @@ fn rebuild_drops_stale_ids_and_recomputes_learned() {
         learned: Default::default(), // as after deserialization: empty
         deaths: 999,                 // save damage
         total_deaths: 3,
+        ..Progress::default()
     };
     p.rebuild(&tiny_curriculum());
 

@@ -84,6 +84,11 @@ pub struct Tr {
     pub hint_whisper: &'static str,
     pub hint_exhausted: &'static str,
 
+    // Blood echoes.
+    pub echoes: &'static str,
+    pub stain_here: &'static str,
+    pub stain_away: &'static str,
+
     // Raw compiler output disclosure.
     pub raw_diagnostic: &'static str,
 

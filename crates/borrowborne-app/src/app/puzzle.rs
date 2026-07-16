@@ -36,17 +36,33 @@ fn scene_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
                 }
             });
             ui.add_space(6.0);
+            let puzzle_id = app.current_puzzle().id.clone();
             let hints = app.current_puzzle().hints.clone();
+            let stained_here = app
+                .progress
+                .bloodstain
+                .as_ref()
+                .is_some_and(|s| s.puzzle_id == puzzle_id);
             egui::ScrollArea::vertical().show(ui, |ui| {
                 ui.label(RichText::new(scene).size(14.0));
+
+                // The corpse run: your echoes lie at this very door.
+                if stained_here {
+                    ui.add_space(8.0);
+                    ui.label(
+                        RichText::new(format!("☠ {}", tr.stain_here))
+                            .color(BLOOD)
+                            .italics(),
+                    );
+                }
 
                 if hints.is_empty() {
                     return;
                 }
                 ui.add_space(10.0);
                 ui.separator();
-                // Revealed tiers stay visible; the lantern offers the
-                // next one until it runs out of things to say.
+                // Revealed tiers stay visible; each further whisper
+                // costs echoes — the lantern does not burn for free.
                 for hint in hints.iter().take(app.hints_shown) {
                     ui.label(
                         RichText::new(format!("🕯 {hint}"))
@@ -56,14 +72,21 @@ fn scene_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
                     ui.add_space(2.0);
                 }
                 if app.hints_shown < hints.len() {
+                    let cost = borrowborne_core::Progress::hint_cost(app.hints_shown);
                     let label = format!(
-                        "{} ({}/{})",
+                        "{} — {cost}◉ ({}/{})",
                         tr.hint_whisper,
                         app.hints_shown + 1,
                         hints.len()
                     );
-                    if ui.button(label).clicked() {
+                    let affordable = app.progress.echoes >= cost;
+                    if ui
+                        .add_enabled(affordable, egui::Button::new(label))
+                        .clicked()
+                        && app.progress.buy_hint(app.hints_shown)
+                    {
                         app.hints_shown += 1;
+                        app.dirty = true; // the purse changed: flush
                     }
                 } else {
                     ui.label(RichText::new(tr.hint_exhausted).weak().small());

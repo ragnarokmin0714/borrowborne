@@ -12,5 +12,5 @@ pub mod verdict;
 
 pub use curriculum::{Chapter, Concept, Curriculum, Puzzle};
 pub use error::CoreError;
-pub use progress::Progress;
+pub use progress::{Bloodstain, Progress};
 pub use verdict::Verdict;

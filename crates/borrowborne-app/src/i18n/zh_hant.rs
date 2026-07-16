@@ -28,6 +28,10 @@ pub static ZH: Tr = Tr {
     hint_whisper: "🕯 向提燈求問",
     hint_exhausted: "提燈已無話可說。",
 
+    echoes: "迴響",
+    stain_here: "你失落的迴響就在此處。通過試煉，將它們取回。",
+    stain_away: "迴響失落於",
+
     raw_diagnostic: "世界的原話",
 
     e0382: Voice {
