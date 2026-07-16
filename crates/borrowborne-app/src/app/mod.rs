@@ -35,6 +35,10 @@ pub struct BorrowborneApp {
     cast_rx: Option<mpsc::Receiver<Verdict>>,
     /// Center of the Cast button last frame; particle burst origin.
     cast_origin: egui::Pos2,
+    /// Set when progress changed this frame: flush the save immediately
+    /// instead of waiting for eframe's autosave tick, so a crash right
+    /// after a pass (or a death) can never eat the verdict.
+    dirty: bool,
 
     fx: Fx,
 }
@@ -75,6 +79,7 @@ impl BorrowborneApp {
             verdict: None,
             cast_rx: None,
             cast_origin: egui::pos2(0.0, 0.0),
+            dirty: false,
             fx: Fx::default(),
         }
     }
@@ -140,6 +145,7 @@ impl BorrowborneApp {
         let puzzle = self.current_puzzle();
         let (id, concepts) = (puzzle.id.clone(), puzzle.concepts.clone());
         self.progress.record(&id, &concepts, &verdict);
+        self.dirty = true;
 
         if verdict.is_pass() {
             self.fx.on_pass(self.cast_origin);
@@ -171,8 +177,15 @@ impl BorrowborneApp {
 }
 
 impl eframe::App for BorrowborneApp {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         self.draw(ctx);
+        if self.dirty {
+            if let Some(storage) = frame.storage_mut() {
+                eframe::App::save(self, storage);
+                storage.flush();
+            }
+            self.dirty = false;
+        }
     }
 
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
