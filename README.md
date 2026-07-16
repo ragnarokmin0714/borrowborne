@@ -15,9 +15,26 @@ that the real `rustc` accepts.
 
 - **Read the scene** — an NPC states the problem (left panel).
 - **Write the spell** — real Rust, in the in-game editor.
-- **Cast** — the code is compiled and run against hidden trials.
-- **The world answers** — compiler errors become the voice of the world;
-  a `panic!` at runtime kills your character. Roguelike rules apply.
+- **Cast** — the code is compiled and run against hidden trials. The
+  trial is a monster: a compile error whiffs (the borrow checker
+  speaks in character — raw diagnostics stay one click away), a failed
+  trial is blocked, and a pass slashes its health bar down.
+- **The world answers** — a `panic!` at runtime kills your character.
+  Roguelike rules apply.
+
+### Blood echoes
+
+First-solving a puzzle earns **echoes**. Dying drops your whole purse
+as a bloodstain at the puzzle that killed you — re-solve it to reclaim
+them; die again holding echoes and the old stain is lost forever.
+Echoes buy **hints**, three tiers per puzzle: a concept nudge, the
+faulty line, a near-solution.
+
+### Run curses
+
+Every run rolls one curse: `.clone()` forbidden, `.unwrap()` forbidden,
+or a per-cast echo tax. Curses bend the run's rules, never the judge —
+whatever reaches the compiler is judged exactly as ever.
 
 ## The map is the curriculum
 
