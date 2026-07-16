@@ -5,8 +5,30 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-16
+
 ### Added
 
+- **Newbie Village**: 8 puzzles (variables, `mut`, shadowing, `if` as
+  expression, `loop`/`break`, `while`, integer types, `const`, and a
+  combined elder's trial). Puzzle 4 deliberately walks the player into
+  the Timeout verdict, puzzle 5 into TrialFailed — every verdict kind
+  is met in safety before the night begins.
+- **Ownership Forest expansion**: `.clone()` as the honest answer
+  (of-04), `&str` vs `String` with deref coercion (of-05). 13 puzzles
+  total.
+- **Compiler errors as NPC dialogue**: eight common E-codes get an
+  in-world line plus a plain-language note (en / zh-Hant / ja); the
+  raw diagnostic stays available, collapsed.
+- **Tiered hints**: three per puzzle (concept nudge → faulty line →
+  near-solution), revealed one at a time; hints re-seal on puzzle
+  change and restart.
+- **Content gate test**: every puzzle's starter and canonical solution
+  are compiled by the real `rustc` in CI — starters must fail,
+  solutions must pass. `.ron` edits are now as protected as code.
+- Cross-chapter navigation (the last door of a region opens into the
+  next); the web build now embeds all chapters (it previously fell
+  back to the forest only).
 - Save-on-verdict: progress flushes to disk immediately after each
   pass/death instead of waiting for eframe's autosave tick.
 - Save hardening: `learned` concepts are no longer serialized (derived
