@@ -45,7 +45,6 @@ fn scene_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
 fn editor_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
     let tr = app.lang.strings();
     let casting = app.casting();
-    let puzzle_count = app.curriculum.chapters[app.chapter_ix].puzzles.len();
 
     egui::CentralPanel::default().show(ctx, |ui| {
         ui.add_space(4.0);
@@ -83,13 +82,13 @@ fn editor_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 let next = ui
                     .add_enabled(
-                        app.puzzle_ix + 1 < puzzle_count && !casting,
+                        app.can_step(true) && !casting,
                         egui::Button::new(tr.next_puzzle),
                     )
                     .clicked();
                 let prev = ui
                     .add_enabled(
-                        app.puzzle_ix > 0 && !casting,
+                        app.can_step(false) && !casting,
                         egui::Button::new(tr.prev_puzzle),
                     )
                     .clicked();
@@ -101,10 +100,10 @@ fn editor_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
                     app.verdict = None;
                 }
                 if next {
-                    app.goto_puzzle(app.puzzle_ix + 1);
+                    app.goto_step(true);
                 }
                 if prev {
-                    app.goto_puzzle(app.puzzle_ix - 1);
+                    app.goto_step(false);
                 }
             });
         });

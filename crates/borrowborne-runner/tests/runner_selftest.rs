@@ -19,6 +19,8 @@ fn kept_key_puzzle() -> Puzzle {
     "TRIAL: the gate stayed shut for the rightful key"
 );"#
         .into(),
+        hints: vec![],
+        solution: String::new(),
     }
 }
 

@@ -1,0 +1,271 @@
+// Newbie Village — variables, mutability, control flow.
+//
+// The hunter's last safe haven before the night. Every verdict kind
+// is met here on purpose: puzzle 4 teaches Timeout, puzzle 5 teaches
+// TrialFailed — so later deaths are never a surprise.
+//
+// Trial assertions MUST carry a "TRIAL: …" message: the runner uses the
+// marker to tell a failed trial apart from a player panic (permadeath).
+(
+    id: "newbie-village",
+    name: "Newbie Village",
+    tagline: "One lantern, one vow, one long night ahead.",
+    puzzles: [
+        (
+            id: "nv-01-the-unchanging-vow",
+            title: "The Unchanging Vow",
+            scene: "The night walk begins at dusk, and your lantern holds ten measures of oil — not enough.\n\nIn this village, every binding is a vow: once spoken, it does not change. To pour more oil you must declare, out loud, that this vessel was MADE to change.\n\nAmend the vow.",
+            concepts: [Variables, Mutability],
+            starter_code: r#"fn fill_lantern() -> u32 {
+    let oil = 10;
+    // The lantern demands more before the night walk. But the vow
+    // above was carved immutable — this refill will not compile.
+    oil = oil + 5;
+    oil
+}
+"#,
+            trial: r#"assert_eq!(
+    fill_lantern(),
+    15,
+    "TRIAL: the lantern left the village dim"
+);"#,
+            hints: [
+                "In Rust, bindings are immutable by default. Changing one takes a keyword.",
+                "The vow breaks at `oil = oil + 5` — the binding was never allowed to change.",
+                "Declare `let mut oil = 10;` and the lantern will accept the refill.",
+            ],
+            solution: r#"fn fill_lantern() -> u32 {
+    let mut oil = 10;
+    oil = oil + 5;
+    oil
+}
+"#,
+        ),
+        (
+            id: "nv-02-the-shadow-self",
+            title: "The Shadow Self",
+            scene: "The gate ledger demands your age as a NUMBER. All you carry is a slip of paper reading \"17\" — words, not a number.\n\nThe village keeper whispers: a name may be spoken anew, and the new self eclipses the old — even a self of a different kind. This is not change; it is shadowing.\n\nLet a number step out of the paper's shadow.",
+            concepts: [Variables],
+            starter_code: r#"fn true_age() -> u32 {
+    let age = "17";
+    // Words cannot grow older. The ledger needs a number — you may
+    // bind the name `age` again, as something new.
+    age + 1
+}
+"#,
+            trial: r#"assert_eq!(
+    true_age(),
+    18,
+    "TRIAL: the ledger read a false age"
+);"#,
+            hints: [
+                "`let` can bind the same name again — even to a different type. That is shadowing, not mutation.",
+                "Before the `+ 1`, rebind: a second `let age = …;` line that holds a number.",
+                "`let age: u32 = 17;` (or parse the string) — the old paper self is eclipsed, and `age + 1` compiles.",
+            ],
+            solution: r#"fn true_age() -> u32 {
+    let age = "17";
+    let age: u32 = age.parse().unwrap();
+    age + 1
+}
+"#,
+        ),
+        (
+            id: "nv-03-the-fork-guard",
+            title: "The Fork Guard",
+            scene: "A guard stands where the road forks. Hunters pass free; everyone else pays five coins.\n\nIn this land, a fork in the road IS a value — the `if` itself hands you what you chose. But both roads must carry the same kind of thing, or the fork collapses.\n\nMake both branches speak in coins.",
+            concepts: [ControlFlow],
+            starter_code: r#"fn toll(is_hunter: bool) -> u32 {
+    // An if-else is an expression: it yields a value. But one branch
+    // yields a number and the other yields words — the fork collapses.
+    let price = if is_hunter { 0 } else { "5" };
+    price
+}
+"#,
+            trial: r#"assert_eq!(toll(true), 0, "TRIAL: a hunter was charged at the fork");
+assert_eq!(toll(false), 5, "TRIAL: a stranger slipped past unpaid");"#,
+            hints: [
+                "In Rust, `if`/`else` is an expression — and both branches must have the same type.",
+                "One branch yields `0` (a number), the other `\"5\"` (a string). They cannot meet.",
+                "Change the else branch to `5` — a number, like its twin.",
+            ],
+            solution: r#"fn toll(is_hunter: bool) -> u32 {
+    let price = if is_hunter { 0 } else { 5 };
+    price
+}
+"#,
+        ),
+        (
+            id: "nv-04-the-sleepless-wheel",
+            title: "The Sleepless Wheel",
+            scene: "The well's water wheel turns, and turns, and turns. The trough needs exactly SEVEN buckets — but nobody ever told the wheel when to stop.\n\nBeware, hunter: a spell that wanders past the time the world allows is declared lost. You will feel this verdict now, in safety, so you recognize it later in the dark.\n\nTeach the wheel to stop.",
+            concepts: [ControlFlow],
+            starter_code: r#"fn draw_water() -> u32 {
+    let mut buckets = 0;
+    // The wheel turns forever unless someone tells it when to stop.
+    // Run this as-is and you will meet the Timeout verdict — on
+    // purpose. Then teach it to `break`.
+    loop {
+        buckets += 1;
+    }
+}
+"#,
+            trial: r#"assert_eq!(
+    draw_water(),
+    7,
+    "TRIAL: the trough demands exactly seven buckets"
+);"#,
+            hints: [
+                "`loop` repeats forever — unless a `break` releases it. A `break` can even carry a value out.",
+                "Inside the loop, check the bucket count; at seven, break.",
+                "`loop { buckets += 1; if buckets == 7 { break buckets; } }` — the loop itself becomes the value.",
+            ],
+            solution: r#"fn draw_water() -> u32 {
+    let mut buckets = 0;
+    loop {
+        buckets += 1;
+        if buckets == 7 {
+            break buckets;
+        }
+    }
+}
+"#,
+        ),
+        (
+            id: "nv-05-the-bell-count",
+            title: "The Bell Count",
+            scene: "The bell tower marks the hour: six o'clock, six rings. But the old ringer's counting is cursed — the village keeps hearing one ring too many.\n\nHear this well, hunter: the spell COMPILES. The world accepts it. And it is still wrong. A compiling spell that fails its trial is a lesson you will meet many times.\n\nFix the count.",
+            concepts: [ControlFlow, Mutability],
+            starter_code: r#"fn toll_bells(hour: u32) -> u32 {
+    let mut rings = 0;
+    let mut i = 1;
+    // One ring for each hour — but this bell always rings once more.
+    while i <= hour + 1 {
+        rings += 1;
+        i += 1;
+    }
+    rings
+}
+"#,
+            trial: r#"assert_eq!(toll_bells(6), 6, "TRIAL: the village heard a false hour");
+assert_eq!(toll_bells(0), 0, "TRIAL: the bell rang at the hour of nothing");"#,
+            hints: [
+                "The code compiles and runs — the bug is in the boundary of the loop.",
+                "How many times does `while i <= hour + 1` run, starting from `i = 1`?",
+                "The condition should be `i <= hour` — the `+ 1` is the extra ring.",
+            ],
+            solution: r#"fn toll_bells(hour: u32) -> u32 {
+    let mut rings = 0;
+    let mut i = 1;
+    while i <= hour {
+        rings += 1;
+        i += 1;
+    }
+    rings
+}
+"#,
+        ),
+        (
+            id: "nv-06-the-narrow-door",
+            title: "The Narrow Door",
+            scene: "The church door must be rebuilt: three hundred thumbs wide, say the plans.\n\nThe carpenter hands you a plank of type `u8` — a fine plank, but it can only hold numbers up to 255. The width will not fit, and the world knows it before the first nail is driven.\n\nChoose a wider plank.",
+            concepts: [Variables],
+            starter_code: r#"fn door_width() -> u16 {
+    // A u8 holds 0..=255. Three hundred will not fit in this plank,
+    // and the compiler refuses to pretend otherwise.
+    let width: u8 = 300;
+    width as u16
+}
+"#,
+            trial: r#"assert_eq!(
+    door_width(),
+    300,
+    "TRIAL: the door came out the wrong width"
+);"#,
+            hints: [
+                "Every integer type has a range. `u8` ends at 255.",
+                "The literal 300 overflows the `u8` annotation — the compiler catches it at the door.",
+                "Annotate `let width: u16 = 300;` and return it (the cast becomes harmless or unnecessary).",
+            ],
+            solution: r#"fn door_width() -> u16 {
+    let width: u16 = 300;
+    width
+}
+"#,
+        ),
+        (
+            id: "nv-07-the-carved-stone",
+            title: "The Carved Stone",
+            scene: "At the village square stands a stone: \"FOUNDED 1347\". Carved once, known everywhere, changed never — this is `const`, older and stricter than any `let`.\n\nBut a carving must state WHAT KIND of thing it holds. The mason forgot, and the stone stands unreadable.\n\nComplete the carving.",
+            concepts: [Variables],
+            starter_code: r#"// A const lives outside any function and must always name its type.
+// This carving is missing something.
+const VILLAGE_FOUNDED = 1347;
+
+fn stone_age(now: u32) -> u32 {
+    now - VILLAGE_FOUNDED
+}
+"#,
+            trial: r#"assert_eq!(
+    stone_age(1400),
+    53,
+    "TRIAL: the stone lies about its years"
+);"#,
+            hints: [
+                "`const` is stricter than `let`: the type annotation is not optional.",
+                "The carving needs its kind, right after the name.",
+                "`const VILLAGE_FOUNDED: u32 = 1347;`",
+            ],
+            solution: r#"const VILLAGE_FOUNDED: u32 = 1347;
+
+fn stone_age(now: u32) -> u32 {
+    now - VILLAGE_FOUNDED
+}
+"#,
+        ),
+        (
+            id: "nv-08-the-elders-trial",
+            title: "The Elder's Trial",
+            scene: "The elder bars the village gate. \"Count with me, from 1 to n. A multiple of 3 earns 3 points. A multiple of 5 earns 5. A multiple of BOTH earns only 1 — humility, hunter. The rest earn nothing.\"\n\nThe elder's abacus is broken in more ways than one: a vow that should bend, and rules that were never finished.\n\nEverything the village taught you, in one spell. Then the night is yours.",
+            concepts: [Variables, Mutability, ControlFlow],
+            starter_code: r#"fn elder_score(n: u32) -> u32 {
+    // Broken twice over: `total` was never allowed to change, and the
+    // elder's rules for 5 and for both are missing entirely.
+    let total = 0;
+    let mut i = 1;
+    while i <= n {
+        if i % 3 == 0 {
+            total += 3;
+        }
+        i += 1;
+    }
+    total
+}
+"#,
+            trial: r#"assert_eq!(elder_score(5), 8, "TRIAL: the elder counted five wrong");
+assert_eq!(elder_score(15), 23, "TRIAL: the elder's humility rule was ignored");
+assert_eq!(elder_score(2), 0, "TRIAL: points appeared from nothing");"#,
+            hints: [
+                "Two bugs: one the compiler will catch (a vow that cannot change), one it cannot (missing rules).",
+                "Make `total` mutable; then handle multiples of 5, and multiples of both 3 and 5 — check 'both' FIRST.",
+                "`if i % 15 == 0 { total += 1 } else if i % 3 == 0 { total += 3 } else if i % 5 == 0 { total += 5 }`",
+            ],
+            solution: r#"fn elder_score(n: u32) -> u32 {
+    let mut total = 0;
+    let mut i = 1;
+    while i <= n {
+        if i % 15 == 0 {
+            total += 1;
+        } else if i % 3 == 0 {
+            total += 3;
+        } else if i % 5 == 0 {
+            total += 5;
+        }
+        i += 1;
+    }
+    total
+}
+"#,
+        ),
+    ],
+)

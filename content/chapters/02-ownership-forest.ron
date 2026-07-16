@@ -31,6 +31,15 @@ assert!(
     !open_gate(String::from("bent-key")),
     "TRIAL: the gate opened for a counterfeit key"
 );"#,
+            solution: r#"fn inspect(key: &str) -> bool {
+    key == "rusty-key"
+}
+
+fn open_gate(key: String) -> bool {
+    let approved = inspect(&key);
+    approved && key == "rusty-key"
+}
+"#,
         ),
         (
             id: "of-02-the-twin-scribes",
@@ -53,6 +62,16 @@ fn measure_twice(scroll: String) -> (usize, usize) {
     (7, 7),
     "TRIAL: the scribes disagree about the scroll"
 );"#,
+            solution: r#"fn measure(scroll: &String) -> usize {
+    scroll.len()
+}
+
+fn measure_twice(scroll: String) -> (usize, usize) {
+    let first = measure(&scroll);
+    let second = measure(&scroll);
+    (first, second)
+}
+"#,
         ),
         (
             id: "of-03-the-whetstone",
@@ -75,6 +94,91 @@ fn forge() -> String {
     "iron sword +1",
     "TRIAL: the blade left the anvil dull"
 );"#,
+            solution: r#"fn sharpen(blade: &mut String) {
+    blade.push_str(" +1");
+}
+
+fn forge() -> String {
+    let mut blade = String::from("iron sword");
+    sharpen(&mut blade);
+    blade
+}
+"#,
+        ),
+        (
+            id: "of-04-the-cost-of-twins",
+            title: "The Cost of Twins",
+            scene: "Twin shrines flank the deep path, and each demands a bone-ash key — demands it WHOLE, to devour. No borrowing appeases them; the offering must be owned.\n\nYou hold one key. The forest offers a dark bargain: a perfect twin can be forged, at a price paid in effort. Some call it wasteful. Tonight, it is simply correct.\n\nForge the twin. Feed both shrines.",
+            concepts: [Move],
+            starter_code: r#"fn consume(key: String) -> usize {
+    // The shrine devours the key whole. It will not accept a borrow.
+    key.len()
+}
+
+fn twin_offering(key: String) -> (usize, usize) {
+    let west = consume(key);
+    // The key went into the west shrine. Nothing remains for the east —
+    // unless a twin is forged before the first offering.
+    let east = consume(key);
+    (west, east)
+}
+"#,
+            trial: r#"assert_eq!(
+    twin_offering(String::from("bone-ash")),
+    (8, 8),
+    "TRIAL: one shrine went unfed"
+);"#,
+            hints: [
+                "When a borrow is not allowed and ownership is demanded twice, duplication is the honest answer.",
+                "`.clone()` forges an owned twin — spend it on the FIRST offering, keep the original for the second.",
+                "`let west = consume(key.clone());` then `let east = consume(key);`",
+            ],
+            solution: r#"fn consume(key: String) -> usize {
+    key.len()
+}
+
+fn twin_offering(key: String) -> (usize, usize) {
+    let west = consume(key.clone());
+    let east = consume(key);
+    (west, east)
+}
+"#,
+        ),
+        (
+            id: "of-05-the-loan-note",
+            title: "The Loan Note",
+            scene: "The forest archivist reads loan notes — thin slices of text, `&str`. You arrive clutching a whole scroll, a `String`, heavy with ink you own.\n\nThe archivist will not take the scroll. \"I read; I do not keep. Show me the writing, not the vessel.\"\n\nOffer a view of what you hold.",
+            concepts: [Borrow],
+            starter_code: r#"fn read_inscription(note: &str) -> usize {
+    note.len()
+}
+
+fn archive() -> usize {
+    let scroll: String = String::from("fear the old blood");
+    // The archivist reads &str; you hold a String. The vessel is not
+    // the writing — offer a view of it instead.
+    read_inscription(scroll)
+}
+"#,
+            trial: r#"assert_eq!(
+    archive(),
+    18,
+    "TRIAL: the inscription went unread"
+);"#,
+            hints: [
+                "A `String` owns its text; a `&str` merely looks at text. Functions that only read usually ask for `&str`.",
+                "You cannot hand over the vessel — lend a view. One character changes everything.",
+                "`read_inscription(&scroll)` — a `&String` softens into `&str` on its own (deref coercion).",
+            ],
+            solution: r#"fn read_inscription(note: &str) -> usize {
+    note.len()
+}
+
+fn archive() -> usize {
+    let scroll: String = String::from("fear the old blood");
+    read_inscription(&scroll)
+}
+"#,
         ),
     ],
 )

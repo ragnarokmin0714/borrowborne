@@ -63,4 +63,13 @@ pub struct Puzzle {
     /// Plain Rust statements; `assert!` failures become
     /// [`crate::Verdict::TrialFailed`] via the harness marker.
     pub trial: String,
+    /// Tiered hints, vaguest first: concept nudge → faulty line →
+    /// near-solution. At most three; optional in content files.
+    #[serde(default)]
+    pub hints: Vec<String>,
+    /// Canonical solution. Never shown to the player — it exists so the
+    /// content gate test can prove every puzzle is solvable (and every
+    /// starter is not already a solution).
+    #[serde(default)]
+    pub solution: String,
 }

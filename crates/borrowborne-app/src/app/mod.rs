@@ -18,9 +18,14 @@ use crate::fx::Fx;
 use crate::i18n::Lang;
 use crate::{fonts, theme};
 
-/// Compiled-in fallback so the game always has content, wherever the
-/// working directory is. Disk content (modding) wins when present.
-const EMBEDDED_CHAPTER: &str = include_str!("../../../../content/chapters/02-ownership-forest.ron");
+/// Compiled-in fallback so the game always has content — on the web
+/// (no filesystem) this IS the content. Disk chapters win when present
+/// (modding). Keep in learning order; new chapters must be added here
+/// as well as on disk, or the web build will silently miss them.
+const EMBEDDED_CHAPTERS: &[&str] = &[
+    include_str!("../../../../content/chapters/01-newbie-village.ron"),
+    include_str!("../../../../content/chapters/02-ownership-forest.ron"),
+];
 
 pub struct BorrowborneApp {
     curriculum: Curriculum,
@@ -66,11 +71,11 @@ impl BorrowborneApp {
     /// State without a window or storage — the layout probe's entry.
     pub fn headless() -> Self {
         let curriculum = load_dir(std::path::Path::new(CHAPTERS_DIR)).unwrap_or_else(|_| {
-            let chapter =
-                parse_chapter(EMBEDDED_CHAPTER, "embedded").expect("embedded chapter must parse");
-            Curriculum {
-                chapters: vec![chapter],
-            }
+            let chapters = EMBEDDED_CHAPTERS
+                .iter()
+                .map(|text| parse_chapter(text, "embedded").expect("embedded chapter must parse"))
+                .collect();
+            Curriculum { chapters }
         });
         let code = curriculum.chapters[0].puzzles[0].starter_code.clone();
         Self {
@@ -159,15 +164,42 @@ impl BorrowborneApp {
         self.verdict = Some(verdict);
     }
 
-    /// Move to another puzzle in the current chapter.
-    fn goto_puzzle(&mut self, ix: usize) {
-        let count = self.curriculum.chapters[self.chapter_ix].puzzles.len();
-        if ix >= count || self.casting() {
+    /// Step to the neighboring puzzle, crossing chapter borders: the
+    /// last door of one region leads into the first door of the next.
+    fn goto_step(&mut self, forward: bool) {
+        if self.casting() {
             return;
         }
-        self.puzzle_ix = ix;
+        let count = self.curriculum.chapters[self.chapter_ix].puzzles.len();
+        if forward {
+            if self.puzzle_ix + 1 < count {
+                self.puzzle_ix += 1;
+            } else if self.chapter_ix + 1 < self.curriculum.chapters.len() {
+                self.chapter_ix += 1;
+                self.puzzle_ix = 0;
+            } else {
+                return;
+            }
+        } else if self.puzzle_ix > 0 {
+            self.puzzle_ix -= 1;
+        } else if self.chapter_ix > 0 {
+            self.chapter_ix -= 1;
+            self.puzzle_ix = self.curriculum.chapters[self.chapter_ix].puzzles.len() - 1;
+        } else {
+            return;
+        }
         self.code = self.current_puzzle().starter_code.clone();
         self.verdict = None;
+    }
+
+    /// Whether a step in the given direction leads anywhere.
+    fn can_step(&self, forward: bool) -> bool {
+        if forward {
+            self.puzzle_ix + 1 < self.curriculum.chapters[self.chapter_ix].puzzles.len()
+                || self.chapter_ix + 1 < self.curriculum.chapters.len()
+        } else {
+            self.puzzle_ix > 0 || self.chapter_ix > 0
+        }
     }
 
     /// One full frame. Split from `update` so the headless layout

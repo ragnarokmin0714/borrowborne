@@ -47,6 +47,20 @@ fn every_puzzle_teaches_and_tests() {
                 "{} trial lacks a TRIAL: marker",
                 p.id
             );
+            // Hints are tiered: nudge → line → near-solution. Three max.
+            assert!(p.hints.len() <= 3, "{} has too many hint tiers", p.id);
+            assert!(
+                p.hints.iter().all(|h| !h.trim().is_empty()),
+                "{} has an empty hint",
+                p.id
+            );
         }
     }
+}
+
+#[test]
+fn curriculum_size_never_regresses() {
+    // 8 village + 5 forest as of 0.3. Content can only grow; shrinkage
+    // means a chapter file failed to load or was accidentally dropped.
+    assert!(curriculum().puzzle_count() >= 13);
 }

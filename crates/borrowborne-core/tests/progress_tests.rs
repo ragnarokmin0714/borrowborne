@@ -18,6 +18,8 @@ fn tiny_curriculum() -> Curriculum {
                 concepts: vec![Concept::Move, Concept::Borrow],
                 starter_code: String::new(),
                 trial: "TRIAL:".into(),
+                hints: vec![],
+                solution: String::new(),
             }],
         }],
     }
