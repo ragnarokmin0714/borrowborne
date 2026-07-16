@@ -11,14 +11,20 @@
 //! content.
 
 mod harness;
+pub mod playground;
+#[cfg(not(target_arch = "wasm32"))]
 mod rustc_local;
 
+#[cfg(not(target_arch = "wasm32"))]
 pub use rustc_local::RustcLocal;
 
 use borrowborne_core::{Puzzle, Verdict};
 
 /// Judges a spell: compiles the player's code with the puzzle's hidden
 /// trial and reports what the world said.
+///
+/// On wasm there is no synchronous judge — the web build talks to the
+/// [`playground`] over the browser's async fetch instead.
 pub trait Sandbox {
     fn evaluate(&self, puzzle: &Puzzle, player_code: &str) -> Verdict;
 }

@@ -22,3 +22,9 @@ eframe = { version = "0.28", default-features = false, features = [
 ] }
 egui = "0.28"
 serde = { workspace = true }
+
+# Web build (trunk + GitHub Pages): the browser fetches the Rust
+# Playground as the judge, since no local rustc exists on wasm.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+ehttp = "0.5"
+wasm-bindgen-futures = "0.4"

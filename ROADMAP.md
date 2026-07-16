@@ -12,9 +12,12 @@ chapter's concepts and the layout probe + runner selftests pass.
 
 ## 0.2 — Newbie Village + polish
 
+- [x] Web build on GitHub Pages (Rust Playground as the judge).
+- [x] Release pipeline: `v*` tags publish Linux/Windows archives.
 - [ ] Newbie Village: variables, `mut`, control flow (5+ puzzles).
 - [ ] Friendly-fied compiler errors: map common E-codes to NPC dialogue.
 - [ ] Map screen: region selection with lock/unlock states.
+- [ ] Subset a CJK font for the web build (zh-Hant/ja chrome glyphs).
 
 ## 0.3 — Enum Town & Result Swamp
 

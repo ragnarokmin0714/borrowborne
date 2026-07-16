@@ -5,6 +5,24 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- Web build: the app compiles to `wasm32-unknown-unknown` and runs in
+  the browser (trunk + eframe `WebRunner`); spells are judged by the
+  official Rust Playground's execute API since no local `rustc` exists
+  on the web. `runner::playground` holds the pure request/verdict
+  protocol with canned-response tests.
+- GitHub Pages deploy workflow (`pages.yml`): every push to `main`
+  publishes the playable web build.
+- Release workflow (`release.yml`): pushing a `v*` tag builds Linux and
+  Windows archives (binary + `content/` + docs) and publishes a GitHub
+  Release.
+
+### Known limitations
+
+- Web build ships without a CJK font: Traditional Chinese / Japanese
+  chrome shows placeholder glyphs in the browser.
+
 ## [0.1.0] - 2026-07-16
 
 ### Added

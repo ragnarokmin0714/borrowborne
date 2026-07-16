@@ -1,0 +1,85 @@
+name: Release
+
+# Push a version tag to trigger a release:
+#   git tag v0.1.0 && git push origin v0.1.0
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write # needed to create the GitHub Release and upload assets
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: build ${{ matrix.asset }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            bin: borrowborne.exe
+            label: windows-x86_64
+            ext: zip
+          - os: ubuntu-latest
+            bin: borrowborne
+            label: linux-x86_64
+            ext: tar.gz
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      # Name archives with the release version, e.g.
+      # borrowborne-0.2.0-linux-x86_64.tar.gz. The tag is like "v0.2.0";
+      # strip the leading "v" for the version.
+      - name: Compute asset name
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          echo "ASSET=borrowborne-${version}-${{ matrix.label }}.${{ matrix.ext }}" >> "$GITHUB_ENV"
+
+      - name: Install GUI build dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libxkbcommon-dev libwayland-dev \
+            libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
+
+      - name: Build release binary
+        run: cargo build --release -p borrowborne-app
+
+      # Ship content/ alongside the binary: the embedded fallback chapter
+      # keeps the game bootable, but disk chapters are the full curriculum
+      # (and the modding surface).
+      - name: Stage archive contents
+        shell: bash
+        run: |
+          mkdir -p stage
+          cp "target/release/${{ matrix.bin }}" stage/
+          cp -r content README.md LICENSE stage/
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        run: Compress-Archive -Path stage/* -DestinationPath $env:ASSET
+
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        run: tar -czf "$ASSET" -C stage .
+
+      # Publish with the GitHub CLI (preinstalled on runners) instead of a
+      # third-party Node action, so there is nothing to keep bumping as GitHub
+      # deprecates Node runtimes. Both matrix jobs share one release: whichever
+      # runs first creates it, the other just uploads its asset.
+      - name: Publish to GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          gh release create "$tag" --title "$tag" --generate-notes 2>/dev/null || true
+          gh release upload "$tag" "$ASSET" --clobber

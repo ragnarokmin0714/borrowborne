@@ -32,13 +32,36 @@ that the real `rustc` accepts.
 | Lifetime Shrine | lifetimes |
 | Concurrency Keep | threads, channels, `Arc`/`Mutex` — the final maze |
 
-## Building
+## Playing
 
-Requires a Rust toolchain (the game shells out to your local `rustc` to
-judge your spells — MVP backend; a wasmtime sandbox is on the roadmap).
+**In the browser** — the web build deploys to GitHub Pages on every
+push to `main`:
+
+> https://ragnarokmin0714.github.io/borrowborne/
+
+On the web your spells are judged by the official
+[Rust Playground](https://play.rust-lang.org)'s execute API (no local
+toolchain needed — but it does need the network, and CJK UI strings are
+not yet bundled for the web).
+
+**Natively** — requires a Rust toolchain (the game shells out to your
+local `rustc` to judge your spells — MVP backend; a wasmtime sandbox is
+on the roadmap):
 
 ```sh
 cargo run --release -p borrowborne-app
+```
+
+Or grab a prebuilt binary from
+[Releases](https://github.com/ragnarokmin0714/borrowborne/releases) —
+tagged `v*` pushes build Linux and Windows archives automatically.
+
+To build the web bundle locally:
+
+```sh
+rustup target add wasm32-unknown-unknown
+cargo install trunk
+cd crates/borrowborne-app && trunk serve
 ```
 
 ## Workspace layout

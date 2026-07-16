@@ -11,6 +11,7 @@ use eframe::egui;
 use borrowborne_core::constants::CHAPTERS_DIR;
 use borrowborne_core::curriculum::{load_dir, parse_chapter};
 use borrowborne_core::{Curriculum, Progress, Verdict};
+#[cfg(not(target_arch = "wasm32"))]
 use borrowborne_runner::{RustcLocal, Sandbox};
 
 use crate::fx::Fx;
@@ -86,8 +87,11 @@ impl BorrowborneApp {
         self.cast_rx.is_some()
     }
 
-    /// Kick off a cast on a worker thread; the UI keeps breathing while
-    /// rustc thinks.
+    /// Kick off a cast; the UI keeps breathing while the judge thinks.
+    ///
+    /// Native: a worker thread runs the local `rustc`. Web: the browser
+    /// fetches the Rust Playground's execute API — same channel, same
+    /// verdicts, different judge.
     fn cast(&mut self, ctx: &egui::Context) {
         if self.casting() {
             return;
@@ -98,11 +102,33 @@ impl BorrowborneApp {
         let puzzle = self.current_puzzle().clone();
         let code = self.code.clone();
         let repaint = ctx.clone();
+
+        #[cfg(not(target_arch = "wasm32"))]
         std::thread::spawn(move || {
             let verdict = RustcLocal.evaluate(&puzzle, &code);
             let _ = tx.send(verdict);
             repaint.request_repaint();
         });
+
+        #[cfg(target_arch = "wasm32")]
+        {
+            use borrowborne_runner::playground;
+            let mut request = ehttp::Request::post(
+                playground::EXECUTE_URL,
+                playground::request_body(&puzzle, &code),
+            );
+            request
+                .headers
+                .insert("Content-Type".to_owned(), "application/json".to_owned());
+            ehttp::fetch(request, move |result| {
+                let verdict = match result {
+                    Ok(resp) => playground::parse_response(resp.status, &resp.bytes),
+                    Err(e) => Verdict::CompileError(format!("the far judge is unreachable: {e}")),
+                };
+                let _ = tx.send(verdict);
+                repaint.request_repaint();
+            });
+        }
     }
 
     /// Collect a finished cast, apply the rules, fire the drama.

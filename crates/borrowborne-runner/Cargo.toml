@@ -6,3 +6,8 @@ license.workspace = true
 
 [dependencies]
 borrowborne-core = { path = "../borrowborne-core" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

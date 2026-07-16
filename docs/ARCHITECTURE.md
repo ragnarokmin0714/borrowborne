@@ -50,9 +50,11 @@ borrowborne/
     │   ├── src/
     │   │   ├── lib.rs              # trait Sandbox { evaluate(code, trial) -> Verdict }
     │   │   ├── harness.rs          # wraps player code + hidden trial into one compilation unit
-    │   │   └── rustc_local.rs      # MVP: Command → rustc, timeout, stderr → Verdict
+    │   │   ├── rustc_local.rs      # native: Command → rustc, timeout, stderr → Verdict
+    │   │   └── playground.rs       # web: request/verdict protocol for the Rust Playground API
     │   └── tests/
-    │       └── runner_selftest.rs  # good code passes / borrow error blocked / panic caught
+    │       ├── runner_selftest.rs  # good code passes / borrow error blocked / panic caught
+    │       └── playground_tests.rs # canned playground responses → verdicts (no network)
     │
     └── borrowborne-app/            # ── egui front end (≙ gamegene-app)
         ├── src/
@@ -85,6 +87,12 @@ borrowborne/
   can be replaced by a `wasm32` + wasmtime sandbox without the app
   noticing. This mirrors how gamegene quarantines OS memory access in
   `gamegene-platform`.
+  - **The web build has no local `rustc`**, so `rustc_local` is
+    compiled out on `wasm32` and `playground.rs` speaks the official
+    Rust Playground's execute API instead. The module stays pure —
+    build a request body, judge a response — because native threads
+    and browser fetch differ too much to hide behind the sync
+    `Sandbox` trait; the app owns the actual HTTP call.
 - **app owns presentation only.** It converts `Verdict` into drama:
   stderr becomes NPC dialogue, `Panicked` triggers permadeath +
   screen shake, `Passed` fires particles. i18n uses a `Tr` struct so a
