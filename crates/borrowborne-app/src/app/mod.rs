@@ -26,6 +26,8 @@ use crate::{fonts, theme};
 const EMBEDDED_CHAPTERS: &[&str] = &[
     include_str!("../../../../content/chapters/01-newbie-village.ron"),
     include_str!("../../../../content/chapters/02-ownership-forest.ron"),
+    include_str!("../../../../content/chapters/03-enum-town.ron"),
+    include_str!("../../../../content/chapters/04-result-swamp.ron"),
 ];
 
 /// Curse book, embedded for the same reason as the chapters. Disk

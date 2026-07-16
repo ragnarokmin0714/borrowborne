@@ -1,0 +1,211 @@
+// Result Swamp — Option, Result, and the ? operator.
+//
+// The swamp is where panic! stops being a rumor. Puzzle 1 invites the
+// player to die on purpose (an unwrap on empty), the way the village
+// taught Timeout — every later death out here is a chosen one.
+//
+// Trial assertions MUST carry a "TRIAL: …" message.
+(
+    id: "result-swamp",
+    name: "Result Swamp",
+    tagline: "The marsh swallows those who assume. Doubt, and live.",
+    puzzles: [
+        (
+            id: "rs-01-the-first-assumption",
+            title: "The First Assumption",
+            scene: "Marsh-lights float over the water — sometimes many, sometimes NONE at all.\n\nThe spell below reaches for the first light and simply assumes one exists. `.unwrap()` is that assumption said aloud: when the marsh is empty, it panics, and out here panic is death.\n\nCast it as-is, if you wish to taste the swamp once while the price is low. Then handle the emptiness like a hunter: no lights means zero.",
+            concepts: [OptionType],
+            starter_code: r#"fn first_light(lights: &[u32]) -> u32 {
+    // `.first()` returns an Option: maybe a light, maybe nothing.
+    // `.unwrap()` bets your life there is one. The trial includes an
+    // empty marsh — this spell WILL die. Handle the None instead.
+    *lights.first().unwrap()
+}
+"#,
+            trial: r#"assert_eq!(first_light(&[7, 2]), 7, "TRIAL: the brightest hour misread");
+assert_eq!(first_light(&[]), 0, "TRIAL: the empty marsh must count as zero");"#,
+            hints: [
+                "`Option` is honesty about absence: `Some(light)` or `None`. `unwrap` erases the honesty.",
+                "You want 'the value, or 0 when there is none' — Option has a method that says exactly that.",
+                "`lights.first().copied().unwrap_or(0)`",
+            ],
+            solution: r#"fn first_light(lights: &[u32]) -> u32 {
+    lights.first().copied().unwrap_or(0)
+}
+"#,
+        ),
+        (
+            id: "rs-02-the-fog-ration",
+            title: "The Fog Ration",
+            scene: "A forager returns from the fog — maybe with oil, maybe with empty hands. The swamp air doubles whatever oil is found; empty hands still earn one measure of hope from the quartermaster.\n\nAn Option is an enum like any other, and match law still holds: BOTH cases must be answered.\n\nAnswer the empty hands.",
+            concepts: [OptionType, Match],
+            starter_code: r#"fn lantern_oil(found: Option<u32>) -> u32 {
+    // Some is answered; None is not. Non-exhaustive — the world
+    // refuses, exactly as it did in Enum Town.
+    match found {
+        Some(oil) => oil * 2,
+    }
+}
+"#,
+            trial: r#"assert_eq!(lantern_oil(Some(5)), 10, "TRIAL: the swamp air failed to double");
+assert_eq!(lantern_oil(None), 1, "TRIAL: empty hands earned no hope");"#,
+            hints: [
+                "`Option<u32>` is an enum with two variants: `Some(u32)` and `None`.",
+                "The match is missing its `None` arm.",
+                "`None => 1,`",
+            ],
+            solution: r#"fn lantern_oil(found: Option<u32>) -> u32 {
+    match found {
+        Some(oil) => oil * 2,
+        None => 1,
+    }
+}
+"#,
+        ),
+        (
+            id: "rs-03-the-groaning-bridge",
+            title: "The Groaning Bridge",
+            scene: "One rotten bridge crosses the deep water, rated for a hundred stone. The bridge keeper answers every attempt with a `Result`: `Ok` and you cross, `Err` and the planks groan you back.\n\nThe spell below unwraps the keeper's answer — and a heavy hunter dies mid-plank. Errors are not for unwrapping; they are for answering. The heavy must be `turned back`, alive.\n\nAnswer the groan.",
+            concepts: [ResultType, Match],
+            starter_code: r#"fn cross_bridge(weight: u32) -> Result<String, String> {
+    if weight <= 100 {
+        Ok(String::from("crossed"))
+    } else {
+        Err(String::from("the bridge groans"))
+    }
+}
+
+fn attempt(weight: u32) -> String {
+    // Unwrapping an Err is a panic — and out here, a death. The
+    // heavy hunter must come back alive, "turned back".
+    cross_bridge(weight).unwrap()
+}
+"#,
+            trial: r#"assert_eq!(attempt(80), "crossed", "TRIAL: a light hunter was stopped");
+assert_eq!(attempt(150), "turned back", "TRIAL: the heavy hunter drowned");"#,
+            hints: [
+                "`Result` is `Ok(value)` or `Err(problem)` — an enum, so match answers both.",
+                "Match the keeper's answer: pass `Ok` through, translate any `Err` into \"turned back\".",
+                "`match cross_bridge(weight) { Ok(s) => s, Err(_) => String::from(\"turned back\") }`",
+            ],
+            solution: r#"fn cross_bridge(weight: u32) -> Result<String, String> {
+    if weight <= 100 {
+        Ok(String::from("crossed"))
+    } else {
+        Err(String::from("the bridge groans"))
+    }
+}
+
+fn attempt(weight: u32) -> String {
+    match cross_bridge(weight) {
+        Ok(s) => s,
+        Err(_) => String::from("turned back"),
+    }
+}
+"#,
+        ),
+        (
+            id: "rs-04-the-rune-reader",
+            title: "The Rune Reader",
+            scene: "Stone runes line the safe path, each carved with a number; the next stone is always that number PLUS ONE. But swamp mud fakes runes that parse into nothing.\n\nParsing returns a Result, and there is a rune for passing failure upward untouched: `?`. It takes the Ok value out — or returns the Err to whoever asked, immediately, politely, without panic.\n\nRead the rune with doubt built in.",
+            concepts: [QuestionMark, ResultType],
+            starter_code: r#"fn read_rune(carving: &str) -> Result<u32, std::num::ParseIntError> {
+    // `parse` returns a Result — this `n` is still wrapped, and
+    // wrapped things cannot be added to. One rune unwraps safely: ?
+    let n = carving.parse::<u32>();
+    Ok(n + 1)
+}
+"#,
+            trial: r#"assert_eq!(read_rune("6"), Ok(7), "TRIAL: the next stone was misread");
+assert!(read_rune("mud").is_err(), "TRIAL: mud was mistaken for a rune");"#,
+            hints: [
+                "`?` after a Result takes the Ok value out — or returns the Err to the caller at once.",
+                "The function already returns the right Result type, so `?` may be used inside it.",
+                "`let n = carving.parse::<u32>()?;`",
+            ],
+            solution: r#"fn read_rune(carving: &str) -> Result<u32, std::num::ParseIntError> {
+    let n = carving.parse::<u32>()?;
+    Ok(n + 1)
+}
+"#,
+        ),
+        (
+            id: "rs-05-the-second-word",
+            title: "The Second Word",
+            scene: "The password to the deep marsh is always the SECOND word of the ferryman's greeting — and its length opens the lock. Some greetings have no second word at all; that is not a death, only a locked gate: None.\n\n`?` works on Option too: it takes the Some out, or hands None back at once.\n\nTake the second word, doubtfully.",
+            concepts: [QuestionMark, OptionType],
+            starter_code: r#"fn password_length(greeting: &str) -> Option<usize> {
+    let mut words = greeting.split(' ');
+    words.next()?;
+    // This `w` is still an Option — an Option has no `.len()`. The
+    // same rune that unwraps Results unwraps Options: ?
+    let w = words.next();
+    Some(w.len())
+}
+"#,
+            trial: r#"assert_eq!(
+    password_length("fear blood"),
+    Some(5),
+    "TRIAL: the password length lied"
+);
+assert_eq!(
+    password_length("fear"),
+    None,
+    "TRIAL: a one-word greeting must stay locked"
+);"#,
+            hints: [
+                "`?` on an Option takes the `Some` value out, or returns `None` immediately.",
+                "The second `words.next()` is missing its `?`.",
+                "`let w = words.next()?;`",
+            ],
+            solution: r#"fn password_length(greeting: &str) -> Option<usize> {
+    let mut words = greeting.split(' ');
+    words.next()?;
+    let w = words.next()?;
+    Some(w.len())
+}
+"#,
+        ),
+        (
+            id: "rs-06-the-swamp-heart",
+            title: "The Swamp Heart",
+            scene: "At the marsh's core, the Swamp Heart brews the potion that opens the way onward — the swamp's final trial.\n\nThe brewing law, in full: read the dose from the label; an illegible label is the error `illegible`. A dose above the limit is the error `lethal`. A lawful dose brews at triple strength.\n\nThe old recipe below unwraps blindly and ignores the lethal limit. Rewrite it so NOTHING in this cauldron can panic — errors are answers here, not deaths.",
+            concepts: [ResultType, QuestionMark],
+            starter_code: r#"fn brew(label: &str, limit: u32) -> Result<u32, String> {
+    // Two sins: an illegible label panics the cauldron, and the
+    // lethal limit is not consulted at all. Errors must come back as
+    // Err(String::from("illegible")) and Err(String::from("lethal")).
+    let dose: u32 = label.trim().parse().unwrap();
+    Ok(dose * 3)
+}
+"#,
+            trial: r#"assert_eq!(brew("4", 10), Ok(12), "TRIAL: a lawful dose brewed wrong");
+assert_eq!(
+    brew("mud", 10),
+    Err(String::from("illegible")),
+    "TRIAL: an illegible label must be an error, not a death"
+);
+assert_eq!(
+    brew("12", 10),
+    Err(String::from("lethal")),
+    "TRIAL: a lethal dose slipped past the limit"
+);"#,
+            hints: [
+                "Two answers to give: translate the parse failure into your own error, and check the limit.",
+                "`.map_err(|_| String::from(\"illegible\"))?` converts the parse error, then an `if` guards the limit.",
+                "`let dose: u32 = label.trim().parse().map_err(|_| String::from(\"illegible\"))?; if dose > limit { return Err(String::from(\"lethal\")); } Ok(dose * 3)`",
+            ],
+            solution: r#"fn brew(label: &str, limit: u32) -> Result<u32, String> {
+    let dose: u32 = label
+        .trim()
+        .parse()
+        .map_err(|_| String::from("illegible"))?;
+    if dose > limit {
+        return Err(String::from("lethal"));
+    }
+    Ok(dose * 3)
+}
+"#,
+        ),
+    ],
+)

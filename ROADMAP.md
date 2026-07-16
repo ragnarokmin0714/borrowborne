@@ -56,8 +56,8 @@ who want the true roguelike covenant.
 - [ ] More curse effects: randomized trial inputs, heavier deaths.
 - [x] Map screen: region nodes, seals break at 70% of the previous
       region; the game opens on the map.
-- [ ] Enum Town: `struct` / `enum` / exhaustive `match`.
-- [ ] Result Swamp: `Option` / `Result` / `?`.
+- [x] Enum Town: `struct` / `enum` / exhaustive `match` (6 puzzles).
+- [x] Result Swamp: `Option` / `Result` / `?` (6 puzzles).
 
 ## 0.4 — Audible & measurable: sound, performance trials
 

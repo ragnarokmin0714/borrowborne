@@ -12,6 +12,13 @@ All notable changes to Borrowborne are documented here. Format follows
   Entering a region lands on its first unsolved door. Later regions
   are sealed until 70% of the region before them is solved; prev/next
   navigation respects the seals.
+- **Enum Town** (6 puzzles): structs and field completion, `impl`
+  methods, exhaustive `match`, data-carrying variants, the lazy-
+  wildcard trap, and a stall-keeper boss (`saturating_sub` underflow).
+- **Result Swamp** (6 puzzles): `Option` handling (an invited unwrap
+  death opens the region), `match` on `Option`, `Result` answering,
+  `?` on `Result` and on `Option`, and the Swamp Heart boss
+  (`map_err` + `?` + guard). 25 puzzles, 4 regions total.
 
 ## [0.4.0] - 2026-07-16
 

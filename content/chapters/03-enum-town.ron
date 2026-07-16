@@ -1,0 +1,273 @@
+// Enum Town — structs, enums, exhaustive match.
+//
+// The town runs on ledgers and bells: shapes with named parts
+// (structs), things that are one-of-several (enums), and the law that
+// every possibility must be answered (match).
+//
+// Trial assertions MUST carry a "TRIAL: …" message.
+(
+    id: "enum-town",
+    name: "Enum Town",
+    tagline: "Every visitor is one of a known few. The gate ledger answers for them all.",
+    puzzles: [
+        (
+            id: "et-01-the-census",
+            title: "The Census",
+            scene: "The town census lists every villager whole: a name AND an age. Elder Maro — seventy-seven winters — stands at the desk, but the clerk's entry stops halfway.\n\nA struct is a shape with named parts, and the shape does not compile until every part is filled.\n\nComplete the elder's entry.",
+            concepts: [Structs],
+            starter_code: r#"struct Villager {
+    name: String,
+    age: u32,
+}
+
+fn eldest() -> u32 {
+    // The census must list the elder whole — Maro is 77 winters old,
+    // but this entry is missing a field and will not compile.
+    let elder = Villager {
+        name: String::from("Maro"),
+    };
+    elder.age
+}
+"#,
+            trial: r#"assert_eq!(eldest(), 77, "TRIAL: the census lies about the elder");"#,
+            hints: [
+                "Constructing a struct requires a value for every field.",
+                "The `Villager` needs its `age` — the compiler even names the missing field.",
+                "Add `age: 77,` beside the name.",
+            ],
+            solution: r#"struct Villager {
+    name: String,
+    age: u32,
+}
+
+fn eldest() -> u32 {
+    let elder = Villager {
+        name: String::from("Maro"),
+        age: 77,
+    };
+    elder.age
+}
+"#,
+        ),
+        (
+            id: "et-02-the-untaught-bell",
+            title: "The Untaught Bell",
+            scene: "The town bell has a pitch, but no one ever taught it to RING. In this land, a thing's abilities live in its `impl` block — a struct without one is a shape that knows no songs.\n\nThe bell law: a ring is twice the bell's pitch.\n\nTeach the bell.",
+            concepts: [Structs],
+            starter_code: r#"struct Bell {
+    pitch: u32,
+}
+
+// A ring is twice the bell's pitch — but nobody taught this bell how.
+// It needs an impl block with a `ring` method.
+
+fn toll() -> u32 {
+    let bell = Bell { pitch: 3 };
+    bell.ring()
+}
+"#,
+            trial: r#"assert_eq!(toll(), 6, "TRIAL: the bell rang a false note");"#,
+            hints: [
+                "Methods live in an `impl` block: `impl Bell { … }`.",
+                "The method takes `&self` — it reads the pitch, it does not consume the bell.",
+                "`impl Bell { fn ring(&self) -> u32 { self.pitch * 2 } }`",
+            ],
+            solution: r#"struct Bell {
+    pitch: u32,
+}
+
+impl Bell {
+    fn ring(&self) -> u32 {
+        self.pitch * 2
+    }
+}
+
+fn toll() -> u32 {
+    let bell = Bell { pitch: 3 };
+    bell.ring()
+}
+"#,
+        ),
+        (
+            id: "et-03-the-two-moods",
+            title: "The Two Moods",
+            scene: "The town hound has exactly two moods — calm, or feral. An enum is a thing that is ONE of a known few, and the law of `match` is absolute: every mood must be answered, or the spell does not compile.\n\nA calm hound howls once. A feral one howls thrice.\n\nAnswer for the feral.",
+            concepts: [Enums, Match],
+            starter_code: r#"enum Mood {
+    Calm,
+    Feral,
+}
+
+fn howl(mood: Mood) -> u32 {
+    // The match must answer every mood. Feral is not answered — the
+    // world calls this non-exhaustive, and refuses.
+    match mood {
+        Mood::Calm => 1,
+    }
+}
+"#,
+            trial: r#"assert_eq!(howl(Mood::Calm), 1, "TRIAL: the calm hound overhowled");
+assert_eq!(howl(Mood::Feral), 3, "TRIAL: the feral hound went unheard");"#,
+            hints: [
+                "`match` on an enum must cover every variant — the missing one is named in the error.",
+                "Add an arm for `Mood::Feral`.",
+                "`Mood::Feral => 3,`",
+            ],
+            solution: r#"enum Mood {
+    Calm,
+    Feral,
+}
+
+fn howl(mood: Mood) -> u32 {
+    match mood {
+        Mood::Calm => 1,
+        Mood::Feral => 3,
+    }
+}
+"#,
+        ),
+        (
+            id: "et-04-the-coin-changer",
+            title: "The Coin Changer",
+            scene: "Enum variants can CARRY things: a copper coin carries its count, and so does a silver. The changer's law is old and firm — one silver is worth ten coppers.\n\nHear this, hunter: the spell below COMPILES. The match binds the numbers cleanly. And the changer still shortchanges every silver in town.\n\nHonor the exchange rate.",
+            concepts: [Enums, Match],
+            starter_code: r#"enum Coin {
+    Copper(u32),
+    Silver(u32),
+}
+
+fn value(coin: Coin) -> u32 {
+    // Compiles — and cheats. A silver is worth ten coppers, yet this
+    // match pays silver at copper rates.
+    match coin {
+        Coin::Copper(n) => n,
+        Coin::Silver(n) => n,
+    }
+}
+"#,
+            trial: r#"assert_eq!(value(Coin::Copper(3)), 3, "TRIAL: copper miscounted");
+assert_eq!(value(Coin::Silver(3)), 30, "TRIAL: the changer shortchanged silver");"#,
+            hints: [
+                "The match arms bind the carried number — the bug is in what one arm does with it.",
+                "One silver is ten coppers.",
+                "`Coin::Silver(n) => n * 10,`",
+            ],
+            solution: r#"enum Coin {
+    Copper(u32),
+    Silver(u32),
+}
+
+fn value(coin: Coin) -> u32 {
+    match coin {
+        Coin::Copper(n) => n,
+        Coin::Silver(n) => n * 10,
+    }
+}
+"#,
+        ),
+        (
+            id: "et-05-the-lazy-wildcard",
+            title: "The Lazy Wildcard",
+            scene: "Three kinds of visitor reach the town gate: hunters pass free, merchants pay five — and BEASTS must be turned away with a fine of ninety-nine.\n\nThe gatekeeper before you was lazy: one wildcard arm, `_`, swallowing everything that is not a hunter. The compiler cannot object — the match IS exhaustive. And the beasts stroll in for five coins.\n\nA wildcard hides what a match should name. Name the beast.",
+            concepts: [Match, Enums],
+            starter_code: r#"enum Visitor {
+    Hunter,
+    Merchant,
+    Beast,
+}
+
+fn gate_fee(visitor: Visitor) -> u32 {
+    // Compiles — the wildcard makes it exhaustive. But a wildcard
+    // answers for things it never looked at, and a beast pays like a
+    // merchant.
+    match visitor {
+        Visitor::Hunter => 0,
+        _ => 5,
+    }
+}
+"#,
+            trial: r#"assert_eq!(gate_fee(Visitor::Hunter), 0, "TRIAL: a hunter was charged");
+assert_eq!(gate_fee(Visitor::Merchant), 5, "TRIAL: a merchant paid wrong");
+assert_eq!(gate_fee(Visitor::Beast), 99, "TRIAL: a beast strolled in for five coins");"#,
+            hints: [
+                "The wildcard `_` matches everything left over — including things you meant to treat differently.",
+                "Give the beast its own arm; keep or drop the wildcard as you see fit.",
+                "`Visitor::Beast => 99, Visitor::Merchant => 5,` — naming every arm lets the compiler guard future visitors too.",
+            ],
+            solution: r#"enum Visitor {
+    Hunter,
+    Merchant,
+    Beast,
+}
+
+fn gate_fee(visitor: Visitor) -> u32 {
+    match visitor {
+        Visitor::Hunter => 0,
+        Visitor::Merchant => 5,
+        Visitor::Beast => 99,
+    }
+}
+"#,
+        ),
+        (
+            id: "et-06-the-market-boss",
+            title: "The Stall Keeper's Reckoning",
+            scene: "Market day, and the stall keeper bars your way — the town's final trial.\n\nA stall has a price. A customer is one of two kinds: a regular pays the price in full; a haggler carries a discount to subtract. But the keeper's law holds one more clause: NO SALE BELOW ONE COPPER, however fierce the haggling — and mind that taking a big discount from a small price must not tear a hole in the world.\n\nEverything the town taught you, in one ledger.",
+            concepts: [Structs, Enums, Match],
+            starter_code: r#"struct Stall {
+    price: u32,
+}
+
+enum Customer {
+    Regular,
+    Haggler(u32),
+}
+
+fn charge(stall: Stall, customer: Customer) -> u32 {
+    // Two flaws: the hagglers go unanswered, and when they ARE
+    // answered, a discount larger than the price must still leave
+    // one copper — u32 subtraction does not forgive going below zero.
+    match customer {
+        Customer::Regular => stall.price,
+    }
+}
+"#,
+            trial: r#"assert_eq!(
+    charge(Stall { price: 10 }, Customer::Regular),
+    10,
+    "TRIAL: a regular was cheated"
+);
+assert_eq!(
+    charge(Stall { price: 10 }, Customer::Haggler(3)),
+    7,
+    "TRIAL: a fair haggle went wrong"
+);
+assert_eq!(
+    charge(Stall { price: 10 }, Customer::Haggler(99)),
+    1,
+    "TRIAL: the till dipped below one copper"
+);"#,
+            hints: [
+                "Two steps: answer the `Haggler` arm, then make the arithmetic safe when the discount exceeds the price.",
+                "`u32` panics on underflow in debug builds — `saturating_sub` never goes below zero, and `.max(1)` enforces the keeper's floor.",
+                "`Customer::Haggler(d) => stall.price.saturating_sub(d).max(1),`",
+            ],
+            solution: r#"struct Stall {
+    price: u32,
+}
+
+enum Customer {
+    Regular,
+    Haggler(u32),
+}
+
+fn charge(stall: Stall, customer: Customer) -> u32 {
+    match customer {
+        Customer::Regular => stall.price,
+        Customer::Haggler(discount) => stall.price.saturating_sub(discount).max(1),
+    }
+}
+"#,
+        ),
+    ],
+)
