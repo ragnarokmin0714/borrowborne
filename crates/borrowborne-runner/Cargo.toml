@@ -1,0 +1,8 @@
+[package]
+name = "borrowborne-runner"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+borrowborne-core = { path = "../borrowborne-core" }

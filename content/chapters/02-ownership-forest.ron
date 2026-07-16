@@ -1,0 +1,80 @@
+// Ownership Forest — move semantics and borrowing.
+//
+// Trial assertions MUST carry a "TRIAL: …" message: the runner uses the
+// marker to tell a failed trial apart from a player panic (permadeath).
+(
+    id: "ownership-forest",
+    name: "Ownership Forest",
+    tagline: "Here, what you give away is gone. The trees remember every move.",
+    puzzles: [
+        (
+            id: "of-01-the-kept-key",
+            title: "The Kept Key",
+            scene: "A gatekeeper blocks the forest path.\n\n\"Hand me your key and I shall inspect it,\" it rasps — but whatever you hand this creature, it KEEPS. You must let it look at the key without giving the key away, or you will have nothing left to open the gate with.\n\nMend the spell so the gatekeeper only borrows.",
+            concepts: [Move, Borrow],
+            starter_code: r#"// The gatekeeper takes ownership of the key… and keeps it.
+fn inspect(key: String) -> bool {
+    key == "rusty-key"
+}
+
+fn open_gate(key: String) -> bool {
+    let approved = inspect(key);
+    // The key was moved into `inspect` — it is gone. This does not compile.
+    approved && key == "rusty-key"
+}
+"#,
+            trial: r#"assert!(
+    open_gate(String::from("rusty-key")),
+    "TRIAL: the gate stayed shut for the rightful key"
+);
+assert!(
+    !open_gate(String::from("bent-key")),
+    "TRIAL: the gate opened for a counterfeit key"
+);"#,
+        ),
+        (
+            id: "of-02-the-twin-scribes",
+            title: "The Twin Scribes",
+            scene: "Two scribes must each measure the same ancient scroll.\n\nThe first scribe takes the scroll to measure it — and the scroll is gone. The second scribe finds only empty air.\n\nLet both scribes read the scroll without consuming it.",
+            concepts: [Borrow],
+            starter_code: r#"fn measure(scroll: String) -> usize {
+    scroll.len()
+}
+
+fn measure_twice(scroll: String) -> (usize, usize) {
+    let first = measure(scroll);
+    // The scroll was moved into the first measurement. Nothing remains.
+    let second = measure(scroll);
+    (first, second)
+}
+"#,
+            trial: r#"assert_eq!(
+    measure_twice(String::from("ancient")),
+    (7, 7),
+    "TRIAL: the scribes disagree about the scroll"
+);"#,
+        ),
+        (
+            id: "of-03-the-whetstone",
+            title: "The Whetstone",
+            scene: "A blade lies on the forest anvil. The whetstone can sharpen it — but only if it is allowed to CHANGE the blade.\n\nA shared glance (`&`) lets you look; only an exclusive grip (`&mut`) lets you alter. And a thing must itself be willing to change (`mut`) before any grip can bend it.\n\nGrant the whetstone its exclusive grip.",
+            concepts: [MutBorrow, Mutability],
+            starter_code: r#"fn sharpen(blade: &String) {
+    // A shared borrow may look, but never alter. This does not compile.
+    blade.push_str(" +1");
+}
+
+fn forge() -> String {
+    let blade = String::from("iron sword");
+    sharpen(&blade);
+    blade
+}
+"#,
+            trial: r#"assert_eq!(
+    forge(),
+    "iron sword +1",
+    "TRIAL: the blade left the anvil dull"
+);"#,
+        ),
+    ],
+)

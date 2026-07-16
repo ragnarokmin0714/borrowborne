@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!--
+    Borrowborne hunter's mark.
+
+    A Bloodborne-style homage, not a copy: the gothic dark ground and
+    rune-mark composition nod to the hunter's mark, but the sigil itself
+    is ours — the ampersand, Rust's borrow operator, drawn as a rune,
+    bleeding one drop. What you give away is gone.
+  -->
+  <defs>
+    <radialGradient id="ground" cx="50%" cy="42%" r="68%">
+      <stop offset="0%" stop-color="#241f20"/>
+      <stop offset="70%" stop-color="#151213"/>
+      <stop offset="100%" stop-color="#0b0a0a"/>
+    </radialGradient>
+    <linearGradient id="bone" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e3d9c4"/>
+      <stop offset="100%" stop-color="#b3a68c"/>
+    </linearGradient>
+    <linearGradient id="blood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c43a37"/>
+      <stop offset="100%" stop-color="#7e1418"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Gothic ground -->
+  <circle cx="256" cy="256" r="248" fill="url(#ground)"/>
+  <circle cx="256" cy="256" r="248" fill="none" stroke="#3a3132" stroke-width="6"/>
+  <circle cx="256" cy="256" r="232" fill="none" stroke="#4a3436" stroke-width="2" opacity="0.6"/>
+
+  <!-- Rune scratches: the mark was carved, not printed -->
+  <g stroke="#5d4f47" stroke-width="3" stroke-linecap="round" opacity="0.55">
+    <path d="M96 150 L122 124"/>
+    <path d="M414 132 L390 158"/>
+    <path d="M88 372 L116 396"/>
+    <path d="M422 380 L398 404"/>
+  </g>
+
+  <!-- The borrow rune: an ampersand drawn as a hunter's mark.
+       Two carved strokes, angular where a typeface would be round. -->
+  <g fill="none" stroke="url(#bone)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Upper knot -->
+    <path d="M300 178
+             C300 128 252 110 220 132
+             C186 155 194 200 232 224
+             L262 242"/>
+    <!-- Lower sweep crossing itself, tail flung out like a slash -->
+    <path d="M232 224
+             C176 254 158 314 196 356
+             C236 400 306 386 330 330
+             M262 242 L360 388"/>
+  </g>
+
+  <!-- The drop: what the borrow never returned -->
+  <path d="M360 388
+           C360 388 340 424 340 444
+           C340 462 349 472 360 472
+           C371 472 380 462 380 444
+           C380 424 360 388 360 388 Z"
+        fill="url(#blood)"/>
+  <ellipse cx="354" cy="440" rx="5" ry="8" fill="#e0706a" opacity="0.5"/>
+</svg>
