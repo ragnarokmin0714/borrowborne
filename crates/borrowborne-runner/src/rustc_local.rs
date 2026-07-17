@@ -13,7 +13,7 @@ use std::time::{Duration, Instant};
 use borrowborne_core::constants::{COMPILE_TIMEOUT_SECS, RUN_TIMEOUT_SECS};
 use borrowborne_core::{Puzzle, Verdict};
 
-use crate::harness::{compose, PASS_MARKER, TRIAL_MARKER};
+use crate::harness::{compose, parse_trial_millis, PASS_MARKER, TRIAL_MARKER};
 use crate::Sandbox;
 
 /// Judges spells with the machine's own `rustc`.
@@ -92,7 +92,9 @@ fn judge_run(output: &Output) -> Verdict {
     let stderr = String::from_utf8_lossy(&output.stderr);
 
     if output.status.success() && stdout.contains(PASS_MARKER) {
-        return Verdict::Passed;
+        return Verdict::Passed {
+            trial_millis: parse_trial_millis(&stdout),
+        };
     }
     // A panic whose message carries the trial marker is a failed trial;
     // any other abnormal end is the player's own doing. Permadeath.

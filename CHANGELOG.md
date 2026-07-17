@@ -7,6 +7,15 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ### Added
 
+- **Speed grades (S/A/B)**: the harness now times the trial itself
+  and prints the elapsed millis with the pass marker — local `rustc`
+  and the Playground share one stopwatch that excludes compile time
+  and network. S (≤50 ms) pays +25 echoes on first solve, A (≤500 ms)
+  +10; the best grade per puzzle is kept in the save and a ⚡S/⚡A
+  float celebrates fast kills. This is the honest LeetCode model:
+  measured wall time under the trial's workload, no fake Big-O
+  detection — TLE armor (huge inputs vs. the 5 s budget) arrives
+  with the Iterator Library content.
 - **Volume controls**: the speaker button is now a menu — mute plus
   independent Effects and Music sliders (kira sub-tracks), persisted.
 - **BGM audibility**: drones gained ×3/×4/×6 mid partials — laptop

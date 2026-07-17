@@ -11,9 +11,12 @@ fn body(success: bool, stdout: &str, stderr: &str) -> Vec<u8> {
 }
 
 #[test]
-fn pass_marker_wins() {
+fn pass_marker_wins_and_carries_timing() {
+    let v = parse_response(200, &body(true, "__BORROWBORNE_PASS__ 42\n", ""));
+    assert_eq!(v, Verdict::Passed { trial_millis: 42 });
+    // A marker without millis (older harness) still passes, at 0.
     let v = parse_response(200, &body(true, "__BORROWBORNE_PASS__\n", ""));
-    assert_eq!(v, Verdict::Passed);
+    assert_eq!(v, Verdict::Passed { trial_millis: 0 });
 }
 
 #[test]

@@ -42,6 +42,14 @@ pub const ECHOES_PER_SOLVE: u64 = 25;
 /// Cost of each hint tier: the vaguer the whisper, the cheaper.
 pub const HINT_COSTS: [u64; 3] = [5, 10, 20];
 
+/// Trial wall-time (ms) at or under which a pass grades S.
+pub const GRADE_S_MILLIS: u64 = 50;
+/// Trial wall-time (ms) at or under which a pass grades A.
+pub const GRADE_A_MILLIS: u64 = 500;
+/// Extra echoes for a first solve graded S / A (B earns the base).
+pub const ECHO_BONUS_S: u64 = 25;
+pub const ECHO_BONUS_A: u64 = 10;
+
 /// Fraction of a region's puzzles that must be solved before the next
 /// region unseals. 0.7 leaves room to skip a wall without grinding.
 pub const CHAPTER_UNLOCK_FRACTION: f32 = 0.7;

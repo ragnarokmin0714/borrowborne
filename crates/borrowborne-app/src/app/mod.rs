@@ -319,13 +319,19 @@ impl BorrowborneApp {
         let tr = self.lang.strings();
         let stage = self.encounter_bar.center_top();
         match &verdict {
-            Verdict::Passed => {
+            Verdict::Passed { trial_millis } => {
                 self.fx.on_kill(self.encounter_bar);
                 self.fx.on_pass(self.cast_origin);
                 let gained = self.progress.echoes.saturating_sub(purse_before);
                 if gained > 0 {
                     self.fx
                         .float_text(stage, format!("+{gained} ◉"), theme::RUNE_GOLD);
+                }
+                let grade = borrowborne_core::Grade::from_millis(*trial_millis);
+                if grade != borrowborne_core::Grade::B {
+                    let above = stage - egui::vec2(0.0, 26.0);
+                    self.fx
+                        .float_text(above, format!("⚡{}", grade.letter()), theme::RUNE_GOLD);
                 }
                 self.sfx(Sfx::Kill);
             }

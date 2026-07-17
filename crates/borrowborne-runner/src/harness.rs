@@ -15,6 +15,11 @@ pub const TRIAL_MARKER: &str = "TRIAL:";
 /// Player code defines items (`fn`, `struct`, …) — no `main` of its
 /// own. Lints that only exist because the trial may not exercise every
 /// item are allowed; correctness lints stay on.
+///
+/// The harness times the trial itself and prints the elapsed millis
+/// after the pass marker — so local rustc and the far playground use
+/// the same stopwatch, and it measures pure trial execution (no
+/// compile time, no network).
 pub fn compose(puzzle: &Puzzle, player_code: &str) -> String {
     format!(
         "#![allow(dead_code, unused_variables, unused_mut)]\n\
@@ -22,9 +27,20 @@ pub fn compose(puzzle: &Puzzle, player_code: &str) -> String {
          {player_code}\n\
          // ── hidden trial ──────────────────────────────────────\n\
          fn main() {{\n\
+         let __bb_clock = std::time::Instant::now();\n\
          {trial}\n\
-         println!(\"{PASS_MARKER}\");\n\
+         println!(\"{PASS_MARKER} {{}}\", __bb_clock.elapsed().as_millis());\n\
          }}\n",
         trial = puzzle.trial,
     )
+}
+
+/// Millis printed after the pass marker, when present and sane.
+pub fn parse_trial_millis(stdout: &str) -> u64 {
+    stdout
+        .find(PASS_MARKER)
+        .map(|pos| &stdout[pos + PASS_MARKER.len()..])
+        .and_then(|rest| rest.split_whitespace().next())
+        .and_then(|token| token.parse().ok())
+        .unwrap_or(0)
 }

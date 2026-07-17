@@ -29,7 +29,11 @@ fn tiny_curriculum() -> Curriculum {
 #[test]
 fn pass_records_solved_and_learned() {
     let mut p = Progress::default();
-    let ended = p.record("of-01", &[Concept::Move, Concept::Borrow], &Verdict::Passed);
+    let ended = p.record(
+        "of-01",
+        &[Concept::Move, Concept::Borrow],
+        &Verdict::Passed { trial_millis: 0 },
+    );
     assert!(!ended);
     assert!(p.solved.contains("of-01"));
     assert!(p.learned.contains(&Concept::Move));
@@ -50,9 +54,21 @@ fn echoes_flow_earn_once_drop_reclaim_replace() {
     assert_eq!(p.echoes, STARTING_ECHOES);
 
     // First solve pays; solving the same gate again does not.
-    p.record("of-01", &[], &Verdict::Passed);
+    p.record(
+        "of-01",
+        &[],
+        &Verdict::Passed {
+            trial_millis: 900, /* grade B: no bonus */
+        },
+    );
     assert_eq!(p.echoes, STARTING_ECHOES + ECHOES_PER_SOLVE);
-    p.record("of-01", &[], &Verdict::Passed);
+    p.record(
+        "of-01",
+        &[],
+        &Verdict::Passed {
+            trial_millis: 900, /* grade B: no bonus */
+        },
+    );
     assert_eq!(p.echoes, STARTING_ECHOES + ECHOES_PER_SOLVE);
 
     // Death drops the whole purse where the hunter fell.
@@ -73,19 +89,67 @@ fn echoes_flow_earn_once_drop_reclaim_replace() {
 
     // The corpse run: solving where you fell reclaims the echoes
     // (plus the first-solve reward for the new gate).
-    p.record("of-02", &[], &Verdict::Passed);
+    p.record(
+        "of-02",
+        &[],
+        &Verdict::Passed {
+            trial_millis: 900, /* grade B: no bonus */
+        },
+    );
     assert_eq!(p.echoes, held + ECHOES_PER_SOLVE);
     assert_eq!(p.bloodstain, None);
 
     // A new death holding echoes replaces any older stain.
     p.record("of-04", &[], &Verdict::Panicked("boom".into()));
-    p.record("of-01", &[], &Verdict::Passed); // reopen: no pay, no reclaim
+    p.record(
+        "of-01",
+        &[],
+        &Verdict::Passed {
+            trial_millis: 900, /* grade B: no bonus */
+        },
+    ); // reopen: no pay, no reclaim
     assert_eq!(p.echoes, 0);
-    p.record("of-05", &[], &Verdict::Passed); // earn fresh echoes
+    p.record(
+        "of-05",
+        &[],
+        &Verdict::Passed {
+            trial_millis: 900, /* grade B: no bonus */
+        },
+    ); // earn fresh echoes
     p.record("of-05", &[], &Verdict::Panicked("boom".into()));
     let stain = p.bloodstain.as_ref().unwrap();
     assert_eq!(stain.puzzle_id, "of-05", "new stain must replace the old");
     assert_eq!(stain.amount, ECHOES_PER_SOLVE, "old echoes are lost");
+}
+
+#[test]
+fn speed_grades_pay_bonuses_and_keep_the_best() {
+    use borrowborne_core::constants::{ECHOES_PER_SOLVE, ECHO_BONUS_S};
+    use borrowborne_core::Grade;
+
+    let mut p = Progress::default();
+    // A slow first solve: base pay, grade B on record.
+    p.record("slow", &[], &Verdict::Passed { trial_millis: 900 });
+    assert_eq!(p.echoes, STARTING_ECHOES + ECHOES_PER_SOLVE);
+    assert_eq!(p.grades["slow"], Grade::B);
+
+    // A blazing first solve: base + S bonus.
+    p.record("fast", &[], &Verdict::Passed { trial_millis: 3 });
+    assert_eq!(
+        p.echoes,
+        STARTING_ECHOES + ECHOES_PER_SOLVE * 2 + ECHO_BONUS_S
+    );
+    assert_eq!(p.grades["fast"], Grade::S);
+
+    // Re-solving faster upgrades the grade but pays nothing more.
+    let purse = p.echoes;
+    p.record("slow", &[], &Verdict::Passed { trial_millis: 10 });
+    assert_eq!(p.echoes, purse, "an open gate pays nothing");
+    assert_eq!(p.grades["slow"], Grade::S, "the best grade is kept");
+
+    // Re-solving slower never downgrades.
+    p.record("fast", &[], &Verdict::Passed { trial_millis: 999 });
+    assert_eq!(p.grades["fast"], Grade::S);
 }
 
 #[test]
@@ -139,7 +203,7 @@ fn save_format_stays_small_learned_is_not_serialized() {
     p.record(
         "known-puzzle",
         &[Concept::Move, Concept::Borrow],
-        &Verdict::Passed,
+        &Verdict::Passed { trial_millis: 0 },
     );
 
     let json = serde_json::to_string(&p).unwrap();
@@ -211,10 +275,10 @@ fn chapters_unseal_at_the_threshold() {
     assert!(!p.chapter_unlocked(&cur, 1));
 
     for i in 0..6 {
-        p.record(&format!("a-{i}"), &[], &Verdict::Passed);
+        p.record(&format!("a-{i}"), &[], &Verdict::Passed { trial_millis: 0 });
     }
     assert!(!p.chapter_unlocked(&cur, 1), "6/10 < 70%");
-    p.record("a-6", &[], &Verdict::Passed);
+    p.record("a-6", &[], &Verdict::Passed { trial_millis: 0 });
     assert!(p.chapter_unlocked(&cur, 1), "7/10 breaks the seal");
     assert!(!p.chapter_unlocked(&cur, 2), "past the end stays sealed");
 }

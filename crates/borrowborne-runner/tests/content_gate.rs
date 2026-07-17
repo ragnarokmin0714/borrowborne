@@ -13,7 +13,6 @@
 use std::path::PathBuf;
 
 use borrowborne_core::curriculum::load_dir;
-use borrowborne_core::Verdict;
 use borrowborne_runner::{RustcLocal, Sandbox};
 
 fn chapters_dir() -> PathBuf {
@@ -33,18 +32,16 @@ fn every_starter_fails_and_every_solution_passes() {
             );
 
             let starter = RustcLocal.evaluate(puzzle, &puzzle.starter_code);
-            assert_ne!(
-                starter,
-                Verdict::Passed,
+            assert!(
+                !starter.is_pass(),
                 "{}: the starter already passes — nothing to solve",
                 puzzle.id
             );
 
             let solution = RustcLocal.evaluate(puzzle, &puzzle.solution);
-            assert_eq!(
-                solution,
-                Verdict::Passed,
-                "{}: the canonical solution does not pass",
+            assert!(
+                solution.is_pass(),
+                "{}: the canonical solution does not pass (got {solution:?})",
                 puzzle.id
             );
         }

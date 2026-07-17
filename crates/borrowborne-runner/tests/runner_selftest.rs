@@ -34,7 +34,13 @@ fn open_gate(key: String) -> bool {
 }
 "#;
     let v = RustcLocal.evaluate(&kept_key_puzzle(), code);
-    assert_eq!(v, Verdict::Passed);
+    // The harness times the trial: a pass carries sane wall-clock ms.
+    match v {
+        Verdict::Passed { trial_millis } => {
+            assert!(trial_millis < 5_000, "implausible timing: {trial_millis}")
+        }
+        other => panic!("expected Passed, got {other:?}"),
+    }
 }
 
 #[test]

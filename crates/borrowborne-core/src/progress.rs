@@ -1,15 +1,15 @@
 //! Save model: what the player has conquered, and what it cost.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use serde::{Deserialize, Serialize};
 
 use crate::constants::{
-    CHAPTER_UNLOCK_FRACTION, DEFAULT_HUNTER_NAME, ECHOES_PER_SOLVE, HINT_COSTS, LIVES_PER_RUN,
-    MAX_HUNTER_NAME_LEN, STARTING_ECHOES,
+    CHAPTER_UNLOCK_FRACTION, DEFAULT_HUNTER_NAME, ECHOES_PER_SOLVE, ECHO_BONUS_A, ECHO_BONUS_S,
+    HINT_COSTS, LIVES_PER_RUN, MAX_HUNTER_NAME_LEN, STARTING_ECHOES,
 };
 use crate::curriculum::{Concept, Curriculum};
-use crate::verdict::Verdict;
+use crate::verdict::{Grade, Verdict};
 
 /// Blood echoes lying where a hunter died — Bloodborne rules:
 /// re-solve that puzzle to reclaim them; die again holding echoes and
@@ -58,6 +58,9 @@ pub struct Progress {
     /// [`Progress::rebuild`].
     #[serde(default = "default_hunter_name")]
     pub hunter_name: String,
+    /// Best speed grade per solved puzzle (S beats A beats B).
+    #[serde(default)]
+    pub grades: HashMap<String, Grade>,
 }
 
 fn default_hunter_name() -> String {
@@ -79,6 +82,7 @@ impl Default for Progress {
             bloodstain: None,
             active_curse: None,
             hunter_name: default_hunter_name(),
+            grades: HashMap::new(),
         }
     }
 }
@@ -96,6 +100,7 @@ impl Progress {
     ///   steal from the player).
     pub fn rebuild(&mut self, curriculum: &Curriculum) {
         self.solved.retain(|id| curriculum.puzzle(id).is_some());
+        self.grades.retain(|id, _| curriculum.puzzle(id).is_some());
         self.learned = self
             .solved
             .iter()
@@ -129,11 +134,22 @@ impl Progress {
     /// Record a verdict for a puzzle. Returns `true` when this death
     /// ended the run (deaths reached [`LIVES_PER_RUN`]).
     pub fn record(&mut self, puzzle_id: &str, concepts: &[Concept], verdict: &Verdict) -> bool {
-        if verdict.is_pass() {
-            // First solve pays; an already-open gate pays nothing.
+        if let Verdict::Passed { trial_millis } = verdict {
+            let grade = Grade::from_millis(*trial_millis);
+            // First solve pays base + speed bonus; an already-open
+            // gate pays nothing, but a better grade is still kept.
             if self.solved.insert(puzzle_id.to_owned()) {
-                self.echoes += ECHOES_PER_SOLVE;
+                self.echoes += ECHOES_PER_SOLVE
+                    + match grade {
+                        Grade::S => ECHO_BONUS_S,
+                        Grade::A => ECHO_BONUS_A,
+                        Grade::B => 0,
+                    };
             }
+            self.grades
+                .entry(puzzle_id.to_owned())
+                .and_modify(|best| *best = (*best).min(grade))
+                .or_insert(grade);
             self.learned.extend(concepts.iter().copied());
             // The corpse run: passing the puzzle where you fell
             // reclaims what you dropped there.

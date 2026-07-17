@@ -8,7 +8,7 @@
 use borrowborne_core::{Puzzle, Verdict};
 use serde::Deserialize;
 
-use crate::harness::{compose, PASS_MARKER, TRIAL_MARKER};
+use crate::harness::{compose, parse_trial_millis, PASS_MARKER, TRIAL_MARKER};
 
 /// Playground execute endpoint. Serves permissive CORS — the same API
 /// mdBook's runnable examples call from arbitrary origins.
@@ -52,7 +52,9 @@ pub fn parse_response(status: u16, bytes: &[u8]) -> Verdict {
     };
 
     if resp.success && resp.stdout.contains(PASS_MARKER) {
-        return Verdict::Passed;
+        return Verdict::Passed {
+            trial_millis: parse_trial_millis(&resp.stdout),
+        };
     }
     if let Some(pos) = resp.stderr.find(TRIAL_MARKER) {
         let msg = resp.stderr[pos + TRIAL_MARKER.len()..]

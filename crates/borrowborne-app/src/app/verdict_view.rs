@@ -3,14 +3,14 @@
 
 use eframe::egui::{self, Color32, RichText};
 
-use borrowborne_core::Verdict;
+use borrowborne_core::{Grade, Verdict};
 
 use crate::i18n::Tr;
 use crate::theme::{BLOOD, EMBER, RUNE_GOLD};
 
 pub fn show(ui: &mut egui::Ui, tr: &Tr, verdict: &Verdict) {
     let (color, title, body, detail): (Color32, &str, &str, Option<&str>) = match verdict {
-        Verdict::Passed => (RUNE_GOLD, tr.verdict_pass_title, tr.verdict_pass_body, None),
+        Verdict::Passed { .. } => (RUNE_GOLD, tr.verdict_pass_title, tr.verdict_pass_body, None),
         Verdict::CompileError(diag) => (
             EMBER,
             tr.verdict_compile_title,
@@ -42,6 +42,16 @@ pub fn show(ui: &mut egui::Ui, tr: &Tr, verdict: &Verdict) {
         .show(ui, |ui| {
             ui.label(RichText::new(title).strong().size(17.0).color(color));
             ui.label(body);
+
+            // Speed grade: how fast the trial itself ran.
+            if let Verdict::Passed { trial_millis } = verdict {
+                let grade = Grade::from_millis(*trial_millis);
+                ui.label(
+                    RichText::new(format!("⚡ {} — {trial_millis} ms", grade.letter()))
+                        .strong()
+                        .color(RUNE_GOLD),
+                );
+            }
             let Some(text) = detail else { return };
 
             // A known compiler error becomes an NPC performance; the

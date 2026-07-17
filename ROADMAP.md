@@ -66,10 +66,11 @@ who want the true roguelike covenant.
       autoplay gesture; mute toggle persisted.
 - [x] BGM second: synthesized seamless drone per region, crossfading
       on travel; no assets, no licensing.
-- [ ] Performance trials (honest LeetCode-style TLE, not fake Big-O
-      detection): late puzzles feed n=10⁵ inputs under the existing
-      timeout — O(n²) bounces off "the monster's armor"; finish-time
-      grades S/A/B multiply damage/echoes.
+- [x] Performance trials engine: the harness times each trial (one
+      stopwatch for both judges); S/A/B grades pay echo bonuses and
+      persist per puzzle. TLE armor is a content pattern (huge inputs
+      vs. the 5 s budget) — first armored puzzles ship with the
+      Iterator Library below.
 - [ ] Trait Guild: pick a class by implementing its trait.
 - [ ] Iterator Library: iterator-chain puzzles over `Vec` / `HashMap`.
 
