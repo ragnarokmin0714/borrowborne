@@ -47,6 +47,7 @@ pub static EN: Tr = Tr {
     sound_bgm: "Music",
 
     hunter_label: "Hunter",
+    hunter_default: "Outlander",
     map_title: "The Night Lands",
     map_button: "🗺 Map",
     map_enter: "Enter",

@@ -47,6 +47,7 @@ pub static ZH: Tr = Tr {
     sound_bgm: "音樂",
 
     hunter_label: "獵人",
+    hunter_default: "異鄉人",
     map_title: "長夜之地",
     map_button: "🗺 地圖",
     map_enter: "進入",

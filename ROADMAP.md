@@ -71,8 +71,11 @@ who want the true roguelike covenant.
       persist per puzzle. TLE armor is a content pattern (huge inputs
       vs. the 5 s budget) — first armored puzzles ship with the
       Iterator Library below.
-- [ ] Trait Guild: pick a class by implementing its trait.
-- [ ] Iterator Library: iterator-chain puzzles over `Vec` / `HashMap`.
+- [x] Trait Guild: pick a class by implementing its trait — impls,
+      default methods, bounds, derives, `dyn`, and a Guildmaster boss.
+- [x] Iterator Library: iterator-chain puzzles over `Vec` / `HashMap`,
+      carrying the first two TLE-armored doors (correct-but-slow
+      starters that die on the 5 s budget).
 
 ## 0.5 — Endgame regions
 

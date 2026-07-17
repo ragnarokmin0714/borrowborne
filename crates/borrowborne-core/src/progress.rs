@@ -5,8 +5,8 @@ use std::collections::{HashMap, HashSet};
 use serde::{Deserialize, Serialize};
 
 use crate::constants::{
-    CHAPTER_UNLOCK_FRACTION, DEFAULT_HUNTER_NAME, ECHOES_PER_SOLVE, ECHO_BONUS_A, ECHO_BONUS_S,
-    HINT_COSTS, LIVES_PER_RUN, MAX_HUNTER_NAME_LEN, STARTING_ECHOES,
+    CHAPTER_UNLOCK_FRACTION, ECHOES_PER_SOLVE, ECHO_BONUS_A, ECHO_BONUS_S, HINT_COSTS,
+    LEGACY_DEFAULT_HUNTER_NAME, LIVES_PER_RUN, MAX_HUNTER_NAME_LEN, STARTING_ECHOES,
 };
 use crate::curriculum::{Concept, Curriculum};
 use crate::verdict::{Grade, Verdict};
@@ -55,16 +55,13 @@ pub struct Progress {
     #[serde(default)]
     pub active_curse: Option<String>,
     /// What the world calls this hunter. Player-editable; sanitized by
-    /// [`Progress::rebuild`].
-    #[serde(default = "default_hunter_name")]
+    /// [`Progress::rebuild`]. Empty means "still the nameless
+    /// outlander" — the app shows a localized default in that case.
+    #[serde(default)]
     pub hunter_name: String,
     /// Best speed grade per solved puzzle (S beats A beats B).
     #[serde(default)]
     pub grades: HashMap<String, Grade>,
-}
-
-fn default_hunter_name() -> String {
-    DEFAULT_HUNTER_NAME.to_owned()
 }
 
 fn starting_echoes() -> u64 {
@@ -81,7 +78,7 @@ impl Default for Progress {
             echoes: STARTING_ECHOES,
             bloodstain: None,
             active_curse: None,
-            hunter_name: default_hunter_name(),
+            hunter_name: String::new(),
             grades: HashMap::new(),
         }
     }
@@ -120,12 +117,14 @@ impl Progress {
         self.sanitize_name();
     }
 
-    /// Keep the hunter's name printable and bounded; an empty or
-    /// whitespace name falls back to the nameless default.
+    /// Keep the hunter's name printable and bounded. Whitespace-only
+    /// names collapse to empty — the nameless outlander, shown under a
+    /// localized default by the app. Saves from before the outlander
+    /// carried a literal "Good Hunter"; that too means "never named".
     pub fn sanitize_name(&mut self) {
         let trimmed = self.hunter_name.trim();
-        self.hunter_name = if trimmed.is_empty() {
-            default_hunter_name()
+        self.hunter_name = if trimmed == LEGACY_DEFAULT_HUNTER_NAME {
+            String::new()
         } else {
             trimmed.chars().take(MAX_HUNTER_NAME_LEN).collect()
         };

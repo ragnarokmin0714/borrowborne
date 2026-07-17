@@ -19,13 +19,17 @@ pub fn central(app: &mut BorrowborneApp, ctx: &egui::Context) {
         ui.add_space(4.0);
 
         // The hunter's name: editable in place, sanitized when focus
-        // leaves, persisted like any other progress.
+        // leaves, persisted like any other progress. An empty name is
+        // the nameless outlander — shown as a localized hint, never
+        // written into the save.
         ui.horizontal(|ui| {
             let indent = (ui.available_width() - 220.0).max(0.0) / 2.0;
             ui.add_space(indent);
             ui.label(RichText::new(tr.hunter_label).weak());
             let resp = ui.add(
-                egui::TextEdit::singleline(&mut app.progress.hunter_name).desired_width(160.0),
+                egui::TextEdit::singleline(&mut app.progress.hunter_name)
+                    .hint_text(tr.hunter_default)
+                    .desired_width(160.0),
             );
             if resp.changed() {
                 app.dirty = true;

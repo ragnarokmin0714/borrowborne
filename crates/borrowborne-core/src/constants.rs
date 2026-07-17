@@ -54,8 +54,10 @@ pub const ECHO_BONUS_A: u64 = 10;
 /// region unseals. 0.7 leaves room to skip a wall without grinding.
 pub const CHAPTER_UNLOCK_FRACTION: f32 = 0.7;
 
-/// The nameless hunter's name, until the player chooses one.
-pub const DEFAULT_HUNTER_NAME: &str = "Good Hunter";
+/// What pre-outlander saves stored as the never-chosen name. Sanitizing
+/// maps it back to empty ("still nameless"); the app then shows the
+/// localized Outlander / 異鄉人 / 異邦人 instead of this English relic.
+pub const LEGACY_DEFAULT_HUNTER_NAME: &str = "Good Hunter";
 
 /// Longest hunter name a save will keep. Purely save hygiene.
 pub const MAX_HUNTER_NAME_LEN: usize = 24;

@@ -221,23 +221,31 @@ fn save_format_stays_small_learned_is_not_serialized() {
 
 #[test]
 fn hunter_names_default_and_sanitize() {
+    // Empty means "still the nameless outlander" — the app renders a
+    // localized default; the save never stores one language's word.
     let mut p = Progress::default();
-    assert_eq!(p.hunter_name, "Good Hunter");
+    assert_eq!(p.hunter_name, "");
 
-    // Whitespace collapses back to the nameless default.
+    // Whitespace collapses back to nameless.
     p.hunter_name = "   ".into();
     p.sanitize_name();
-    assert_eq!(p.hunter_name, "Good Hunter");
+    assert_eq!(p.hunter_name, "");
 
     // Overlong names are clipped, not rejected.
     p.hunter_name = "x".repeat(100);
     p.sanitize_name();
     assert_eq!(p.hunter_name.chars().count(), 24);
 
-    // Old saves without the field load as the default.
+    // Old saves without the field load as nameless…
     let old: Progress = serde_json::from_str(r#"{"solved":[],"deaths":0,"total_deaths":0}"#)
         .expect("old save must load");
-    assert_eq!(old.hunter_name, "Good Hunter");
+    assert_eq!(old.hunter_name, "");
+
+    // …and ones that stored the pre-outlander "Good Hunter" migrate
+    // back to nameless, so they too get the localized default.
+    p.hunter_name = "Good Hunter".into();
+    p.sanitize_name();
+    assert_eq!(p.hunter_name, "");
 }
 
 #[test]

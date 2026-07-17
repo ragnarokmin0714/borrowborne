@@ -47,6 +47,7 @@ pub static JA: Tr = Tr {
     sound_bgm: "音楽",
 
     hunter_label: "狩人",
+    hunter_default: "異邦人",
     map_title: "夜の国",
     map_button: "🗺 地図",
     map_enter: "入る",

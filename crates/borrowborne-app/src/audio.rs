@@ -156,9 +156,10 @@ const BGM_LOOP_SECS: f32 = 12.0;
 /// Drones render at half rate to halve their memory.
 const BGM_SAMPLE_RATE: u32 = 22_050;
 
-/// Root frequencies (Hz): map, village, forest, town, swamp. Each is
-/// chosen so root × 12 is an even integer (see module comment).
-const THEME_ROOTS: [f32; 5] = [55.0, 49.5, 41.5, 62.0, 37.0];
+/// Root frequencies (Hz): map, village, forest, town, swamp, guild,
+/// library. Each is chosen so root × 12 is an even integer (see
+/// module comment).
+const THEME_ROOTS: [f32; 7] = [55.0, 49.5, 41.5, 62.0, 37.0, 46.5, 58.5];
 
 fn themes() -> Vec<StaticSoundData> {
     THEME_ROOTS.iter().map(|&root| render_drone(root)).collect()

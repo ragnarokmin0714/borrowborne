@@ -7,6 +7,23 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ### Added
 
+- **Trait Guild** (6 puzzles): keep a trait's oath (`impl`), override
+  a default method, bound generics, `#[derive]` the common powers,
+  box a mixed brigade behind `dyn`, and a Guildmaster boss demanding
+  an own impl plus a bounded generic duel.
+- **Iterator Library** (7 puzzles): `map`/`collect`, `filter`/`sum`,
+  the HashMap `entry` API, `max_by_key`, and a `filter→map→sum` boss.
+  Includes the first two **TLE-armored doors**: correct-but-quadratic
+  duplicate search against 100 000 cards, and an exploding recursion
+  against a 45-step stair — both die on the 5-second budget until
+  rewritten (HashSet membership; iterative climb). 38 puzzles, 6
+  regions total; both new regions carry their own BGM drones.
+- **The Outlander** (異鄉人 / 異邦人): the never-named hunter is now
+  the localized "Outlander" instead of the English-only "Good
+  Hunter". The save keeps an empty name until the player chooses one
+  (so switching language switches the default too); old saves still
+  holding "Good Hunter" migrate back to nameless.
+
 - **Speed grades (S/A/B)**: the harness now times the trial itself
   and prints the elapsed millis with the pass marker — local `rustc`
   and the Playground share one stopwatch that excludes compile time

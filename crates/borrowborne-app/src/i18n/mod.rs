@@ -111,6 +111,9 @@ pub struct Tr {
 
     // World map.
     pub hunter_label: &'static str,
+    /// Shown while the hunter is still nameless (empty saved name):
+    /// the outlander, a stranger to this land — and to this language.
+    pub hunter_default: &'static str,
     pub map_title: &'static str,
     pub map_button: &'static str,
     pub map_enter: &'static str,

@@ -1,0 +1,269 @@
+// Iterator Library — Vec, HashMap, iterator chains, and the first
+// TLE-ARMORED doors: il-05 and il-06 hand the player CORRECT code
+// that is too slow for the 5-second night. The armor is pure content
+// (huge inputs vs. the run budget); the engine grades as always.
+//
+// Trial assertions MUST carry a "TRIAL: …" message.
+(
+    id: "iterator-library",
+    name: "Iterator Library",
+    tagline: "Every shelf answers those who ask in chains. The night is five seconds long.",
+    puzzles: [
+        (
+            id: "il-01-the-copying-scribe",
+            title: "The Copying Scribe",
+            scene: "The scribe of the first shelf copies manuscripts at DOUBLE size, page by page. You could push each page in a loop — but the library speaks in chains: iterate the pages, transform each one, collect the result into a fresh Vec.\n\nThe desk below is empty. Chain it: `iter` … `map` … `collect`.",
+            concepts: [Iterators],
+            starter_code: r#"fn double_all(pages: &[u32]) -> Vec<u32> {
+    // One chain does it: iterate, double each page, collect anew.
+    Vec::new()
+}
+"#,
+            trial: r#"assert_eq!(
+    double_all(&[1, 2, 3]),
+    vec![2, 4, 6],
+    "TRIAL: the copies came out the wrong size"
+);
+assert_eq!(
+    double_all(&[]),
+    Vec::<u32>::new(),
+    "TRIAL: an empty manuscript copied into something"
+);"#,
+            hints: [
+                "`.iter()` walks the slice, `.map(...)` transforms each item, `.collect()` gathers into a new Vec.",
+                "The closure receives a reference: `|p| p * 2` works because `&u32 * 2` derefs for you.",
+                "pages.iter().map(|p| p * 2).collect()",
+            ],
+            solution: r#"fn double_all(pages: &[u32]) -> Vec<u32> {
+    pages.iter().map(|p| p * 2).collect()
+}
+"#,
+        ),
+        (
+            id: "il-02-the-censors-shelf",
+            title: "The Censor's Shelf",
+            scene: "The censor keeps only tomes with an EVEN page count; the rest go to the fire. The shelf wants the total pages of the SURVIVORS — but the tally below sums everything, ash included.\n\nAdd the judgment to the chain: `filter` keeps what the closure approves, then `sum` counts what remains.",
+            concepts: [Iterators],
+            starter_code: r#"fn surviving_pages(counts: &[u32]) -> u32 {
+    // This sums every tome — the censor has not yet judged. Filter
+    // the evens in before the sum.
+    counts.iter().sum()
+}
+"#,
+            trial: r#"assert_eq!(
+    surviving_pages(&[3, 4, 7, 10]),
+    14,
+    "TRIAL: ash was counted with the survivors"
+);
+assert_eq!(
+    surviving_pages(&[1, 3, 5]),
+    0,
+    "TRIAL: a shelf of odd tomes must total nothing"
+);"#,
+            hints: [
+                "`.filter(...)` keeps only items the closure approves of; chain it before `.sum()`.",
+                "`.iter().copied()` turns `&u32` items into `u32`, so the closure can test `c % 2 == 0` plainly.",
+                "counts.iter().copied().filter(|c| c % 2 == 0).sum()",
+            ],
+            solution: r#"fn surviving_pages(counts: &[u32]) -> u32 {
+    counts.iter().copied().filter(|c| c % 2 == 0).sum()
+}
+"#,
+        ),
+        (
+            id: "il-03-the-lending-ledger",
+            title: "The Lending Ledger",
+            scene: "Every borrower who enters is written into the ledger — a HashMap from name to visit count. But the clerk below writes `1` on EVERY visit: `insert` overwrites, and the ledger forgets.\n\nThe `entry` API remembers: fetch the count if the name is known, create it at zero if not — then add one either way.",
+            concepts: [Collections],
+            starter_code: r#"use std::collections::HashMap;
+
+fn borrow_counts(borrowers: &[&str]) -> HashMap<String, u32> {
+    let mut ledger = HashMap::new();
+    for name in borrowers {
+        // `insert` overwrites: every visit resets the count to 1.
+        ledger.insert(name.to_string(), 1);
+    }
+    ledger
+}
+"#,
+            trial: r#"let ledger = borrow_counts(&["mina", "rolan", "mina", "mina"]);
+assert_eq!(ledger["mina"], 3, "TRIAL: the ledger forgot mina's visits");
+assert_eq!(ledger["rolan"], 1, "TRIAL: rolan's single visit misread");
+assert_eq!(ledger.len(), 2, "TRIAL: phantom borrowers in the ledger");"#,
+            hints: [
+                "`insert` replaces whatever was there. You want read-or-create, then increment.",
+                "`ledger.entry(key)` returns the slot; `.or_insert(0)` fills an empty one and hands back `&mut u32`.",
+                "*ledger.entry(name.to_string()).or_insert(0) += 1;",
+            ],
+            solution: r#"use std::collections::HashMap;
+
+fn borrow_counts(borrowers: &[&str]) -> HashMap<String, u32> {
+    let mut ledger = HashMap::new();
+    for name in borrowers {
+        *ledger.entry(name.to_string()).or_insert(0) += 1;
+    }
+    ledger
+}
+"#,
+        ),
+        (
+            id: "il-04-the-index-of-names",
+            title: "The Index of Names",
+            scene: "The old archivist swears the FIRST book on any shelf bears the longest title. The shelves disagree, loudly.\n\nAsk the iterator for the truth: `max_by_key` walks the whole shelf and keeps whichever item the key closure scores highest. An empty shelf has no longest title — answer it with an empty string, not a panic.",
+            concepts: [Iterators],
+            starter_code: r#"fn longest_title(titles: &[&str]) -> String {
+    // The archivist's superstition: just take the first.
+    titles.first().unwrap_or(&"").to_string()
+}
+"#,
+            trial: r#"assert_eq!(
+    longest_title(&["ash", "bloodletter", "fog"]),
+    "bloodletter",
+    "TRIAL: the index crowned the wrong title"
+);
+assert_eq!(
+    longest_title(&[]),
+    "",
+    "TRIAL: an empty shelf must answer with silence"
+);"#,
+            hints: [
+                "`.max_by_key(...)` keeps the item whose key is largest — here the key is the title's length.",
+                "It returns an Option (empty shelves have no maximum); `unwrap_or(&\"\")` answers those.",
+                "titles.iter().max_by_key(|t| t.len()).unwrap_or(&\"\").to_string()",
+            ],
+            solution: r#"fn longest_title(titles: &[&str]) -> String {
+    titles.iter().max_by_key(|t| t.len()).unwrap_or(&"").to_string()
+}
+"#,
+        ),
+        (
+            id: "il-05-the-flooded-catalogue",
+            title: "The Flooded Catalogue",
+            scene: "The flood mixed a hundred thousand catalogue cards, and ONE may be a duplicate. The clerk's method below is CORRECT — cast it and watch the verdict — but for every card it re-reads every card before it: n cards cost n×n looks, and the night is five seconds long.\n\nCorrect is not enough. A HashSet answers 'have I seen this?' in ONE look — and its `insert` even tells you: it returns `false` when the card was already inside.\n\nBe fast, or be lost.",
+            concepts: [Collections, Iterators],
+            starter_code: r#"fn first_repeat(cards: &[u32]) -> Option<u32> {
+    // Correct — and doomed. `seen.contains` re-reads the whole pile
+    // for every card: n * n looks. The trial floods you with
+    // 100_000 cards; this will NOT finish inside the night.
+    let mut seen: Vec<u32> = Vec::new();
+    for &card in cards {
+        if seen.contains(&card) {
+            return Some(card);
+        }
+        seen.push(card);
+    }
+    None
+}
+"#,
+            trial: r#"assert_eq!(
+    first_repeat(&[3, 7, 3]),
+    Some(3),
+    "TRIAL: the doubled card was missed"
+);
+let flood: Vec<u32> = (0..100_000).collect();
+assert_eq!(
+    first_repeat(&flood),
+    None,
+    "TRIAL: a phantom duplicate among distinct cards"
+);
+let mut late: Vec<u32> = (0..100_000).collect();
+late.push(41_999);
+assert_eq!(
+    first_repeat(&late),
+    Some(41_999),
+    "TRIAL: the late duplicate was missed"
+);"#,
+            hints: [
+                "The logic is right; the cost is wrong. `Vec::contains` walks the pile every time — a HashSet looks once.",
+                "`HashSet::insert` returns `false` if the value was already present: membership test and insert in one call.",
+                "let mut seen = std::collections::HashSet::new(); … if !seen.insert(card) { return Some(card); }",
+            ],
+            solution: r#"use std::collections::HashSet;
+
+fn first_repeat(cards: &[u32]) -> Option<u32> {
+    let mut seen = HashSet::new();
+    for &card in cards {
+        if !seen.insert(card) {
+            return Some(card);
+        }
+    }
+    None
+}
+"#,
+        ),
+        (
+            id: "il-06-the-spiral-stair",
+            title: "The Spiral Stair",
+            scene: "The tower stair is climbed one or two steps at a time, and the doorkeeper asks: how many distinct climbs reach step n? The recursion below answers truly — for a toy stair. It recounts the SAME landings billions of times over; forty-five steps will outlive the night, and the library only lends you five seconds.\n\nClimb once, remembering as you go: two running numbers and a loop.",
+            concepts: [Iterators, ControlFlow],
+            starter_code: r#"fn stair_paths(steps: u64) -> u64 {
+    // Correct — and explosive. Each call spawns two more; step 45
+    // costs billions of recounts of landings already counted.
+    // Keep the last two counts and walk UP instead.
+    if steps <= 1 {
+        return 1;
+    }
+    stair_paths(steps - 1) + stair_paths(steps - 2)
+}
+"#,
+            trial: r#"assert_eq!(stair_paths(1), 1, "TRIAL: one step, one climb");
+assert_eq!(stair_paths(4), 5, "TRIAL: the fourth landing miscounted");
+assert_eq!(
+    stair_paths(45),
+    1_836_311_903,
+    "TRIAL: the tower's crown miscounted"
+);"#,
+            hints: [
+                "The count for step n needs only the counts for n-1 and n-2 — keep those two and forget the rest.",
+                "Start both at 1 (step 0 and step 1), then loop: the next count is the sum, and the pair shifts up.",
+                "let (mut prev, mut cur) = (1u64, 1u64); for _ in 0..steps { let next = prev + cur; prev = cur; cur = next; } prev",
+            ],
+            solution: r#"fn stair_paths(steps: u64) -> u64 {
+    let (mut prev, mut cur) = (1u64, 1u64);
+    for _ in 0..steps {
+        let next = prev + cur;
+        prev = cur;
+        cur = next;
+    }
+    prev
+}
+"#,
+        ),
+        (
+            id: "il-07-the-head-librarian",
+            title: "The Head Librarian",
+            scene: "The Head Librarian buys for the deep vault, and her standing order is precise: ONLY tomes whose title carries the word `rune`, paid at price × copies each, totaled.\n\nHer desk below still shows zero. One chain settles the account: filter what she wants, map each to its worth, sum the coin.\n\nSettle it, and the library is yours.",
+            concepts: [Iterators, Collections],
+            starter_code: r#"// Each entry on the shelf: (title, price, copies).
+fn vault_worth(shelf: &[(&str, u32, u32)]) -> u32 {
+    // filter the rune tomes → map to price * copies → sum.
+    0
+}
+"#,
+            trial: r#"let shelf = [
+    ("rune primer", 3, 2),
+    ("fog atlas", 10, 1),
+    ("elder runes", 5, 4),
+];
+assert_eq!(vault_worth(&shelf), 26, "TRIAL: the librarian was short-paid");
+assert_eq!(
+    vault_worth(&[]),
+    0,
+    "TRIAL: an empty shelf owes nothing"
+);"#,
+            hints: [
+                "Three links: `.filter(...)` on the title, `.map(...)` to price × copies, `.sum()`.",
+                "Destructure the tuple in each closure: `|(title, _, _)| title.contains(\"rune\")`.",
+                "shelf.iter().filter(|(t, _, _)| t.contains(\"rune\")).map(|(_, p, c)| p * c).sum()",
+            ],
+            solution: r#"fn vault_worth(shelf: &[(&str, u32, u32)]) -> u32 {
+    shelf
+        .iter()
+        .filter(|(title, _, _)| title.contains("rune"))
+        .map(|(_, price, copies)| price * copies)
+        .sum()
+}
+"#,
+        ),
+    ],
+)

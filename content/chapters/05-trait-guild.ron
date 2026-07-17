@@ -1,0 +1,355 @@
+// Trait Guild — traits, default methods, derives, generics, dyn.
+//
+// The guild hall is where the hunter finally picks a CLASS — and in
+// Rust a class is nothing but a trait you keep. The chapter walks:
+// implement a trait (tg-01), override a default method (tg-02),
+// bound a generic (tg-03), derive the common powers (tg-04), box a
+// mixed brigade behind `dyn` (tg-05), then the Guildmaster demands
+// all of it at once (tg-06).
+//
+// Trial assertions MUST carry a "TRIAL: …" message.
+(
+    id: "trait-guild",
+    name: "Trait Guild",
+    tagline: "A class is an oath. The guild only counts the oaths you keep.",
+    puzzles: [
+        (
+            id: "tg-01-the-oath",
+            title: "The Oath",
+            scene: "The guild registrar does not ask what you ARE. She asks what you can DO — and a trait is exactly that: a list of things a type promises to do.\n\nThe Oath below is declared, and the Knight stands ready — but declaring an oath is not keeping it. Until the Knight carries an `impl Oath` block, the registrar hears nothing when she calls.\n\nKeep the oath: it must answer, word for word, `by steel and dawn`.",
+            concepts: [Traits],
+            starter_code: r#"trait Oath {
+    fn swear(&self) -> String;
+}
+
+struct Knight;
+
+// The trait is declared and the Knight exists — but no oath binds
+// them. Write the impl block that keeps the promise.
+"#,
+            trial: r#"assert_eq!(
+    Knight.swear(),
+    "by steel and dawn",
+    "TRIAL: the oath was sworn in the wrong words"
+);"#,
+            hints: [
+                "A trait lists promised methods; `impl TheTrait for TheType { … }` is where a type keeps them.",
+                "Write `impl Oath for Knight` with a `swear` whose signature matches the trait's exactly.",
+                "impl Oath for Knight { fn swear(&self) -> String { String::from(\"by steel and dawn\") } }",
+            ],
+            solution: r#"trait Oath {
+    fn swear(&self) -> String;
+}
+
+struct Knight;
+
+impl Oath for Knight {
+    fn swear(&self) -> String {
+        String::from("by steel and dawn")
+    }
+}
+"#,
+        ),
+        (
+            id: "tg-02-the-guild-stance",
+            title: "The Guild Stance",
+            scene: "Most members fight by the guild manual, so the Stance trait ships a DEFAULT: unless a type says otherwise, its stance is `guard`. An empty `impl Stance for … {}` accepts the manual as-is.\n\nBut the Berserker never guards. This spell compiles — defaults always do — and the trial still fails, because the Berserker answers like a Squire.\n\nOverride the default for the Berserker alone: their stance is `frenzy`. Leave the Squire by the book.",
+            concepts: [Traits],
+            starter_code: r#"trait Stance {
+    // A default body: types get this for free unless they override it.
+    fn stance(&self) -> String {
+        String::from("guard")
+    }
+}
+
+struct Squire;
+struct Berserker;
+
+impl Stance for Squire {}
+impl Stance for Berserker {}
+"#,
+            trial: r#"assert_eq!(Squire.stance(), "guard", "TRIAL: the squire left the manual");
+assert_eq!(
+    Berserker.stance(),
+    "frenzy",
+    "TRIAL: a berserker does not guard"
+);"#,
+            hints: [
+                "A default method is only a fallback — an impl block may provide its own body instead.",
+                "Give the Berserker's `impl Stance` a `stance` method of its own; the Squire's stays empty.",
+                "impl Stance for Berserker { fn stance(&self) -> String { String::from(\"frenzy\") } }",
+            ],
+            solution: r#"trait Stance {
+    fn stance(&self) -> String {
+        String::from("guard")
+    }
+}
+
+struct Squire;
+struct Berserker;
+
+impl Stance for Squire {}
+impl Stance for Berserker {
+    fn stance(&self) -> String {
+        String::from("frenzy")
+    }
+}
+"#,
+        ),
+        (
+            id: "tg-03-the-loudness-trial",
+            title: "The Loudness Trial",
+            scene: "Two horns are brought before the guild gate, and the gate opens for the louder. The judge below is GENERIC — it accepts any `T` and any `U` — but generic means the judge knows NOTHING about its guests. Not even that they can bellow.\n\nThe compiler refuses on their behalf: no promise, no method.\n\nBound the generics: promise that `T` and `U` both `Bellow`, and the judge may listen.",
+            concepts: [Generics, Traits],
+            starter_code: r#"trait Bellow {
+    fn bellow(&self) -> u32;
+}
+
+struct WarHorn;
+impl Bellow for WarHorn {
+    fn bellow(&self) -> u32 {
+        90
+    }
+}
+
+struct SilverBell;
+impl Bellow for SilverBell {
+    fn bellow(&self) -> u32 {
+        30
+    }
+}
+
+// T and U promise nothing, so `.bellow()` cannot be called on them.
+// A bound after the name — `T: Bellow` — is the missing promise.
+fn louder_of<T, U>(a: &T, b: &U) -> u32 {
+    a.bellow().max(b.bellow())
+}
+"#,
+            trial: r#"assert_eq!(
+    louder_of(&WarHorn, &SilverBell),
+    90,
+    "TRIAL: the gate opened for the quieter horn"
+);
+assert_eq!(
+    louder_of(&SilverBell, &SilverBell),
+    30,
+    "TRIAL: two bells misjudged"
+);"#,
+            hints: [
+                "A generic function may only call what its bounds promise. `<T>` promises nothing.",
+                "Write the bound in the angle brackets: `<T: Bellow, U: Bellow>`.",
+                "fn louder_of<T: Bellow, U: Bellow>(a: &T, b: &U) -> u32",
+            ],
+            solution: r#"trait Bellow {
+    fn bellow(&self) -> u32;
+}
+
+struct WarHorn;
+impl Bellow for WarHorn {
+    fn bellow(&self) -> u32 {
+        90
+    }
+}
+
+struct SilverBell;
+impl Bellow for SilverBell {
+    fn bellow(&self) -> u32 {
+        30
+    }
+}
+
+fn louder_of<T: Bellow, U: Bellow>(a: &T, b: &U) -> u32 {
+    a.bellow().max(b.bellow())
+}
+"#,
+        ),
+        (
+            id: "tg-04-the-forged-sigil",
+            title: "The Forged Sigil",
+            scene: "Every member's sigil is copied into the guild ledger, and the copy must answer `==` against the original. Copying is the trait `Clone`; comparing is the trait `PartialEq`.\n\nYou COULD keep both oaths by hand — but for plain data the compiler will forge them for you. One line above the struct: `#[derive(...)]`, and the abilities are written in your name.\n\nAsk the forge.",
+            concepts: [Traits, Structs],
+            starter_code: r#"// The sigil can neither be cloned nor compared — nobody has kept
+// (or derived) those oaths for it yet.
+struct Sigil {
+    rank: u32,
+    motto: String,
+}
+
+fn ledger_copy(original: &Sigil) -> Sigil {
+    original.clone()
+}
+"#,
+            trial: r#"let original = Sigil {
+    rank: 3,
+    motto: String::from("no fear in the night"),
+};
+let copy = ledger_copy(&original);
+assert!(
+    copy == original,
+    "TRIAL: the ledger copy does not match the sigil"
+);"#,
+            hints: [
+                "`Clone` and `PartialEq` are ordinary traits — and for plain structs the compiler can implement them itself.",
+                "Put a derive attribute on the struct naming both traits.",
+                "#[derive(Clone, PartialEq)] above `struct Sigil`.",
+            ],
+            solution: r#"#[derive(Clone, PartialEq)]
+struct Sigil {
+    rank: u32,
+    motto: String,
+}
+
+fn ledger_copy(original: &Sigil) -> Sigil {
+    original.clone()
+}
+"#,
+        ),
+        (
+            id: "tg-05-the-mixed-brigade",
+            title: "The Mixed Brigade",
+            scene: "The guild musters a brigade of knights AND mages — but a Vec holds exactly ONE type. The trick is to stop storing the types and store the OATH instead: a boxed trait object, `Box<dyn Fighter>`, is 'some fighter, whoever they are'.\n\nThe muster below forgot the word `dyn`, and modern Rust refuses bare trait names where a type should stand.\n\nSay the word.",
+            concepts: [Traits],
+            starter_code: r#"trait Fighter {
+    fn title(&self) -> String;
+}
+
+struct Knight;
+impl Fighter for Knight {
+    fn title(&self) -> String {
+        String::from("knight")
+    }
+}
+
+struct Mage;
+impl Fighter for Mage {
+    fn title(&self) -> String {
+        String::from("mage")
+    }
+}
+
+// `Box<Fighter>` names the trait where a TYPE must stand. A trait
+// object needs the `dyn` keyword: `Box<dyn Fighter>`.
+fn muster() -> Vec<Box<Fighter>> {
+    vec![Box::new(Knight), Box::new(Mage)]
+}
+"#,
+            trial: r#"let brigade = muster();
+assert_eq!(brigade.len(), 2, "TRIAL: the brigade is short-handed");
+assert_eq!(
+    brigade[0].title(),
+    "knight",
+    "TRIAL: the vanguard is out of place"
+);
+assert_eq!(brigade[1].title(), "mage", "TRIAL: the rearguard is out of place");"#,
+            hints: [
+                "A trait is not a type. 'Some value that implements the trait' is a trait object: `dyn Fighter`.",
+                "Trait objects are unsized, so they live behind a pointer — here, the Box you already have.",
+                "fn muster() -> Vec<Box<dyn Fighter>>",
+            ],
+            solution: r#"trait Fighter {
+    fn title(&self) -> String;
+}
+
+struct Knight;
+impl Fighter for Knight {
+    fn title(&self) -> String {
+        String::from("knight")
+    }
+}
+
+struct Mage;
+impl Fighter for Mage {
+    fn title(&self) -> String {
+        String::from("mage")
+    }
+}
+
+fn muster() -> Vec<Box<dyn Fighter>> {
+    vec![Box::new(Knight), Box::new(Mage)]
+}
+"#,
+        ),
+        (
+            id: "tg-06-the-guildmaster",
+            title: "The Guildmaster",
+            scene: "At the head of the hall waits the Guildmaster — power 88, and no patience for the unsworn. The final rite, in full:\n\nFirst, CHOOSE YOUR CLASS: the Ashen stands beside you, unsworn. Implement `Class` for it — its name is `ashen one`, its power 90.\n\nSecond, teach the hall to judge a duel between ANY two classes: the stronger name is called. The judge below is generic and unbounded — you know this refusal by now.\n\nSwear, bound, and take the hall.",
+            concepts: [Traits, Generics],
+            starter_code: r#"trait Class {
+    fn class_name(&self) -> String;
+    fn power(&self) -> u32;
+}
+
+struct Guildmaster;
+impl Class for Guildmaster {
+    fn class_name(&self) -> String {
+        String::from("guildmaster")
+    }
+    fn power(&self) -> u32 {
+        88
+    }
+}
+
+// Unsworn: the Ashen has no Class yet. Name: "ashen one", power: 90.
+struct Ashen;
+
+// Unbounded: the judge cannot ask power of a stranger.
+fn duel<T, U>(a: &T, b: &U) -> String {
+    if a.power() >= b.power() {
+        a.class_name()
+    } else {
+        b.class_name()
+    }
+}
+"#,
+            trial: r#"assert_eq!(Ashen.power(), 90, "TRIAL: the ashen one's power is wrong");
+assert_eq!(
+    duel(&Ashen, &Guildmaster),
+    "ashen one",
+    "TRIAL: the hall called the weaker name"
+);
+assert_eq!(
+    duel(&Guildmaster, &Guildmaster),
+    "guildmaster",
+    "TRIAL: a mirror duel confused the hall"
+);"#,
+            hints: [
+                "Two jobs: an `impl Class for Ashen`, and bounds on the duel's generics.",
+                "The impl mirrors the Guildmaster's, with \"ashen one\" and 90; the duel needs `<T: Class, U: Class>`.",
+                "impl Class for Ashen { … } and fn duel<T: Class, U: Class>(a: &T, b: &U) -> String",
+            ],
+            solution: r#"trait Class {
+    fn class_name(&self) -> String;
+    fn power(&self) -> u32;
+}
+
+struct Guildmaster;
+impl Class for Guildmaster {
+    fn class_name(&self) -> String {
+        String::from("guildmaster")
+    }
+    fn power(&self) -> u32 {
+        88
+    }
+}
+
+struct Ashen;
+impl Class for Ashen {
+    fn class_name(&self) -> String {
+        String::from("ashen one")
+    }
+    fn power(&self) -> u32 {
+        90
+    }
+}
+
+fn duel<T: Class, U: Class>(a: &T, b: &U) -> String {
+    if a.power() >= b.power() {
+        a.class_name()
+    } else {
+        b.class_name()
+    }
+}
+"#,
+        ),
+    ],
+)
