@@ -5,7 +5,8 @@ use std::collections::HashSet;
 use serde::{Deserialize, Serialize};
 
 use crate::constants::{
-    CHAPTER_UNLOCK_FRACTION, ECHOES_PER_SOLVE, HINT_COSTS, LIVES_PER_RUN, STARTING_ECHOES,
+    CHAPTER_UNLOCK_FRACTION, DEFAULT_HUNTER_NAME, ECHOES_PER_SOLVE, HINT_COSTS, LIVES_PER_RUN,
+    MAX_HUNTER_NAME_LEN, STARTING_ECHOES,
 };
 use crate::curriculum::{Concept, Curriculum};
 use crate::verdict::Verdict;
@@ -53,6 +54,14 @@ pub struct Progress {
     /// on load.
     #[serde(default)]
     pub active_curse: Option<String>,
+    /// What the world calls this hunter. Player-editable; sanitized by
+    /// [`Progress::rebuild`].
+    #[serde(default = "default_hunter_name")]
+    pub hunter_name: String,
+}
+
+fn default_hunter_name() -> String {
+    DEFAULT_HUNTER_NAME.to_owned()
 }
 
 fn starting_echoes() -> u64 {
@@ -69,6 +78,7 @@ impl Default for Progress {
             echoes: STARTING_ECHOES,
             bloodstain: None,
             active_curse: None,
+            hunter_name: default_hunter_name(),
         }
     }
 }
@@ -102,6 +112,18 @@ impl Progress {
                 self.bloodstain = None;
             }
         }
+        self.sanitize_name();
+    }
+
+    /// Keep the hunter's name printable and bounded; an empty or
+    /// whitespace name falls back to the nameless default.
+    pub fn sanitize_name(&mut self) {
+        let trimmed = self.hunter_name.trim();
+        self.hunter_name = if trimmed.is_empty() {
+            default_hunter_name()
+        } else {
+            trimmed.chars().take(MAX_HUNTER_NAME_LEN).collect()
+        };
     }
 
     /// Record a verdict for a puzzle. Returns `true` when this death

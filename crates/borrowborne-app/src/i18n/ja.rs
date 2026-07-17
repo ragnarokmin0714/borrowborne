@@ -42,6 +42,7 @@ pub static JA: Tr = Tr {
 
     curse_label: "呪い",
 
+    hunter_label: "狩人",
     map_title: "夜の国",
     map_button: "🗺 地図",
     map_enter: "入る",

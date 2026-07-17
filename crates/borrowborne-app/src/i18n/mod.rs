@@ -105,6 +105,7 @@ pub struct Tr {
     pub curse_label: &'static str,
 
     // World map.
+    pub hunter_label: &'static str,
     pub map_title: &'static str,
     pub map_button: &'static str,
     pub map_enter: &'static str,

@@ -45,3 +45,9 @@ pub const HINT_COSTS: [u64; 3] = [5, 10, 20];
 /// Fraction of a region's puzzles that must be solved before the next
 /// region unseals. 0.7 leaves room to skip a wall without grinding.
 pub const CHAPTER_UNLOCK_FRACTION: f32 = 0.7;
+
+/// The nameless hunter's name, until the player chooses one.
+pub const DEFAULT_HUNTER_NAME: &str = "Good Hunter";
+
+/// Longest hunter name a save will keep. Purely save hygiene.
+pub const MAX_HUNTER_NAME_LEN: usize = 24;

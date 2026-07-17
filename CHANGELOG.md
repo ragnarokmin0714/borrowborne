@@ -5,6 +5,12 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Hunter name** (issue #1 suggestion): every hunter starts as
+  "Good Hunter" and can be renamed on the world map. Persisted with
+  progress; empty names fall back, long names clip at 24 chars.
+
 ### Fixed (issue #1 feedback)
 
 - **Boxes (□) instead of symbols on the web**: the subset font now

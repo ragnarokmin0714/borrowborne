@@ -156,6 +156,27 @@ fn save_format_stays_small_learned_is_not_serialized() {
 }
 
 #[test]
+fn hunter_names_default_and_sanitize() {
+    let mut p = Progress::default();
+    assert_eq!(p.hunter_name, "Good Hunter");
+
+    // Whitespace collapses back to the nameless default.
+    p.hunter_name = "   ".into();
+    p.sanitize_name();
+    assert_eq!(p.hunter_name, "Good Hunter");
+
+    // Overlong names are clipped, not rejected.
+    p.hunter_name = "x".repeat(100);
+    p.sanitize_name();
+    assert_eq!(p.hunter_name.chars().count(), 24);
+
+    // Old saves without the field load as the default.
+    let old: Progress = serde_json::from_str(r#"{"solved":[],"deaths":0,"total_deaths":0}"#)
+        .expect("old save must load");
+    assert_eq!(old.hunter_name, "Good Hunter");
+}
+
+#[test]
 fn chapters_unseal_at_the_threshold() {
     // Ten puzzles in chapter 0, one in chapter 1.
     let mk = |id: &str| Puzzle {
