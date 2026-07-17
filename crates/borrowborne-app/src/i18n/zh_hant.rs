@@ -41,6 +41,8 @@ pub static ZH: Tr = Tr {
     combat_cursed: "受詛",
 
     curse_label: "詛咒",
+    wound_line_pre: "傷口在第 ",
+    wound_line_post: " 行",
 
     sound_mute: "靜音",
     sound_sfx: "音效",

@@ -12,6 +12,10 @@
 
 mod harness;
 pub mod playground;
+
+/// Where a diagnostic wounded the player's own code — the app uses it
+/// to point at the offending editor line.
+pub use harness::player_error_line;
 #[cfg(not(target_arch = "wasm32"))]
 mod rustc_local;
 

@@ -21,6 +21,9 @@ eframe = { version = "0.28", default-features = false, features = [
     "persistence", # remember language / progress across restarts
 ] }
 egui = "0.28"
+# Syntax highlighting for the spell editor. The built-in simple
+# highlighter (no syntect feature) knows Rust and keeps wasm small.
+egui_extras = { version = "0.28", default-features = false, features = ["serde"] }
 # SFX playback. No codec features: every sound is synthesized in
 # audio.rs, so only the cpal device backend is needed.
 kira = { version = "0.12", default-features = false, features = ["cpal"] }

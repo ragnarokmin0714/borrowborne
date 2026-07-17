@@ -7,6 +7,15 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ### Added
 
+- **Editor intelligence, first tier**: the spell editor now syntax-
+  highlights Rust (egui's built-in highlighter — no heavyweight
+  dependency, works on the web build too), and compile errors /
+  panics point at the wound: the verdict names the offending line of
+  the player's own code and quotes it, in all three languages, instead
+  of leaving the line number buried in raw stderr. Locations that fall
+  in harness or trial territory are never mapped — a wrong line would
+  be worse than none.
+
 - **Trait Guild** (6 puzzles): keep a trait's oath (`impl`), override
   a default method, bound generics, `#[derive]` the common powers,
   box a mixed brigade behind `dyn`, and a Guildmaster boss demanding

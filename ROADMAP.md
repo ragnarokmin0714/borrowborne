@@ -79,6 +79,12 @@ who want the true roguelike covenant.
 
 ## 0.5 — Endgame regions
 
+- [ ] Editor intelligence, second tier: debounced background `rustc`
+      check while typing (native only — the web build cannot hammer
+      the playground), marking wounded lines before the cast.
+      Autocomplete is deliberately out: that is rust-analyzer's job,
+      not a game's. First tier (syntax highlighting + wounded-line
+      callout in verdicts) shipped in 0.6.
 - [ ] Lifetime Shrine: lifetime annotation puzzles.
 - [ ] Concurrency Keep: threads / channels / `Arc<Mutex>` final maze.
 - [ ] Difficulty tiers, including **hardcore**: no save, one run,

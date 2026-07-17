@@ -104,6 +104,11 @@ pub struct Tr {
     // Run curse.
     pub curse_label: &'static str,
 
+    // "The wound is at line N" — split around the number so each
+    // language keeps its own word order (第 N 行 / N 行目).
+    pub wound_line_pre: &'static str,
+    pub wound_line_post: &'static str,
+
     // Sound menu.
     pub sound_mute: &'static str,
     pub sound_sfx: &'static str,

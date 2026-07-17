@@ -41,6 +41,8 @@ pub static JA: Tr = Tr {
     combat_cursed: "呪縛",
 
     curse_label: "呪い",
+    wound_line_pre: "傷は ",
+    wound_line_post: " 行目",
 
     sound_mute: "ミュート",
     sound_sfx: "効果音",

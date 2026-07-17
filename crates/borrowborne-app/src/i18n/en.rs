@@ -41,6 +41,8 @@ pub static EN: Tr = Tr {
     combat_cursed: "CURSED",
 
     curse_label: "curse",
+    wound_line_pre: "the wound is at line ",
+    wound_line_post: "",
 
     sound_mute: "Mute",
     sound_sfx: "Effects",

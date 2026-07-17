@@ -8,7 +8,7 @@ use borrowborne_core::{Grade, Verdict};
 use crate::i18n::Tr;
 use crate::theme::{BLOOD, EMBER, RUNE_GOLD};
 
-pub fn show(ui: &mut egui::Ui, tr: &Tr, verdict: &Verdict) {
+pub fn show(ui: &mut egui::Ui, tr: &Tr, verdict: &Verdict, player_code: &str) {
     let (color, title, body, detail): (Color32, &str, &str, Option<&str>) = match verdict {
         Verdict::Passed { .. } => (RUNE_GOLD, tr.verdict_pass_title, tr.verdict_pass_body, None),
         Verdict::CompileError(diag) => (
@@ -53,6 +53,25 @@ pub fn show(ui: &mut egui::Ui, tr: &Tr, verdict: &Verdict) {
                 );
             }
             let Some(text) = detail else { return };
+
+            // Point at the wound: compile errors and panics carry a
+            // source location — translate it back to the player's own
+            // line and quote it, so nobody has to dig through stderr
+            // to learn WHERE the world said no.
+            if matches!(verdict, Verdict::CompileError(_) | Verdict::Panicked(_)) {
+                let lines = player_code.lines().count();
+                if let Some(n) = borrowborne_runner::player_error_line(text, lines) {
+                    let wounded = player_code.lines().nth(n - 1).unwrap_or("").trim();
+                    ui.label(
+                        RichText::new(format!(
+                            "⚔ {}{n}{} — `{wounded}`",
+                            tr.wound_line_pre, tr.wound_line_post
+                        ))
+                        .strong()
+                        .color(color),
+                    );
+                }
+            }
 
             // A known compiler error becomes an NPC performance; the
             // raw diagnostic stays available but collapsed. Unknown

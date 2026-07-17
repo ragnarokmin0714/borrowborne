@@ -136,11 +136,22 @@ fn editor_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
             .id_source("editor")
             .max_height(ui.available_height() * 0.55)
             .show(ui, |ui| {
+                // Live syntax highlighting: the editor lays its text
+                // out through the highlighter instead of one flat
+                // color. egui_extras caches the result per frame.
+                let theme = egui_extras::syntax_highlighting::CodeTheme::from_memory(ui.ctx());
+                let mut layouter = |ui: &egui::Ui, text: &str, wrap_width: f32| {
+                    let mut job =
+                        egui_extras::syntax_highlighting::highlight(ui.ctx(), &theme, text, "rs");
+                    job.wrap.max_width = wrap_width;
+                    ui.fonts(|f| f.layout_job(job))
+                };
                 ui.add(
                     egui::TextEdit::multiline(&mut app.code)
                         .code_editor()
                         .desired_rows(16)
-                        .desired_width(f32::INFINITY),
+                        .desired_width(f32::INFINITY)
+                        .layouter(&mut layouter),
                 );
             });
 
@@ -191,7 +202,7 @@ fn editor_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
 
         ui.add_space(6.0);
         if let Some(verdict) = app.verdict.clone() {
-            verdict_view::show(ui, tr, &verdict);
+            verdict_view::show(ui, tr, &verdict, &app.code);
         }
     });
 }
