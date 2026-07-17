@@ -129,9 +129,10 @@ fn render(wave: fn(f32, f32) -> f32, dur: f32) -> StaticSoundData {
     let frames: Arc<[Frame]> = (0..n)
         .map(|i| {
             let t = i as f32 / SAMPLE_RATE as f32;
-            // Master gain + a 2 ms fade-out to avoid end clicks.
+            // Soft-clip drive: louder, and the added harmonics carry
+            // on small speakers. 2 ms fade-out avoids end clicks.
             let tail = ((dur - t) / 0.002).clamp(0.0, 1.0);
-            Frame::from_mono(wave(t, dur).clamp(-1.0, 1.0) * 0.5 * tail)
+            Frame::from_mono((wave(t, dur) * 2.0).tanh() * 0.85 * tail)
         })
         .collect();
     StaticSoundData {
@@ -184,8 +185,8 @@ fn render_drone(root: f32) -> StaticSoundData {
     let frames: Arc<[Frame]> = (0..n)
         .map(|i| {
             let t = i as f32 / BGM_SAMPLE_RATE as f32;
-            // Sits under the SFX; the BGM track volume does the rest.
-            Frame::from_mono(drone_wave(root, t) * 0.32)
+            // Driven for warmth and presence; still under the SFX.
+            Frame::from_mono((drone_wave(root, t) * 1.3).tanh() * 0.6)
         })
         .collect();
     StaticSoundData {
