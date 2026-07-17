@@ -34,6 +34,10 @@ pub enum Sfx {
 pub struct Audio {
     manager: AudioManager,
     bank: Vec<(Sfx, StaticSoundData)>,
+    /// One looping drone per theme; see [`themes`].
+    themes: Vec<StaticSoundData>,
+    /// Currently playing theme index and its handle.
+    bgm: Option<(usize, kira::sound::static_sound::StaticSoundHandle)>,
 }
 
 impl Audio {
@@ -50,12 +54,42 @@ impl Audio {
             (Sfx::Death, render(death_wave, 1.10)),
             (Sfx::Timeout, render(timeout_wave, 0.45)),
         ];
-        Some(Self { manager, bank })
+        Some(Self {
+            manager,
+            bank,
+            themes: themes(),
+            bgm: None,
+        })
     }
 
     pub fn play(&mut self, sfx: Sfx) {
         if let Some((_, sound)) = self.bank.iter().find(|(s, _)| *s == sfx) {
             let _ = self.manager.play(sound.clone());
+        }
+    }
+
+    /// Keep the drone for `theme` running; switching themes crossfades
+    /// (the old fades out over the new). No-op when already playing.
+    pub fn ensure_bgm(&mut self, theme: usize) {
+        if self.bgm.as_ref().is_some_and(|(ix, _)| *ix == theme) {
+            return;
+        }
+        self.stop_bgm();
+        let Some(sound) = self.themes.get(theme) else {
+            return;
+        };
+        if let Ok(handle) = self.manager.play(sound.clone()) {
+            self.bgm = Some((theme, handle));
+        }
+    }
+
+    /// Fade the current drone into silence (mute, shutdown).
+    pub fn stop_bgm(&mut self) {
+        if let Some((_, mut handle)) = self.bgm.take() {
+            handle.stop(kira::Tween {
+                duration: std::time::Duration::from_millis(900),
+                ..Default::default()
+            });
         }
     }
 }
@@ -77,6 +111,57 @@ fn render(wave: fn(f32, f32) -> f32, dur: f32) -> StaticSoundData {
         settings: Default::default(),
         slice: None,
     }
+}
+
+// ── BGM: seamless ambient drones ────────────────────────────────────
+//
+// One 12-second loop per theme: index 0 is the world map, 1.. follow
+// the chapters. Seamlessness is arithmetic, not luck — every partial
+// completes an integer number of cycles over the loop (root·12 is
+// kept an even integer so the fifth stays integral too), so the loop
+// point is inaudible. Rendered at half rate: drones have no highs.
+
+/// Loop length in seconds.
+const BGM_LOOP_SECS: f32 = 12.0;
+/// Drones render at half rate to halve their memory.
+const BGM_SAMPLE_RATE: u32 = 22_050;
+
+/// Root frequencies (Hz): map, village, forest, town, swamp. Each is
+/// chosen so root × 12 is an even integer (see module comment).
+const THEME_ROOTS: [f32; 5] = [55.0, 49.5, 41.5, 62.0, 37.0];
+
+fn themes() -> Vec<StaticSoundData> {
+    THEME_ROOTS.iter().map(|&root| render_drone(root)).collect()
+}
+
+/// Layered drone: root + fifth + octave, breathing on slow LFOs whose
+/// rates are integer cycles per loop.
+fn drone_wave(root: f32, t: f32) -> f32 {
+    let lfo =
+        |cycles: f32, phase: f32| 0.55 + 0.45 * (TAU * cycles * t / BGM_LOOP_SECS + phase).sin();
+    let fifth = root * 1.5;
+    let octave = root * 2.0;
+    (TAU * root * t).sin() * 0.5 * lfo(1.0, 0.0)
+        + (TAU * fifth * t).sin() * 0.3 * lfo(2.0, 1.7)
+        + (TAU * octave * t).sin() * 0.2 * lfo(3.0, 3.9)
+}
+
+fn render_drone(root: f32) -> StaticSoundData {
+    let n = (BGM_SAMPLE_RATE as f32 * BGM_LOOP_SECS) as usize;
+    let frames: Arc<[Frame]> = (0..n)
+        .map(|i| {
+            let t = i as f32 / BGM_SAMPLE_RATE as f32;
+            // Quiet by construction: BGM sits far under the SFX.
+            Frame::from_mono(drone_wave(root, t) * 0.16)
+        })
+        .collect();
+    StaticSoundData {
+        sample_rate: BGM_SAMPLE_RATE,
+        frames,
+        settings: Default::default(),
+        slice: None,
+    }
+    .loop_region(..)
 }
 
 const TAU: f32 = std::f32::consts::TAU;

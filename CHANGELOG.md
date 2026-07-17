@@ -7,6 +7,12 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ### Added
 
+- **BGM**: one seamless ambient drone per region (plus the map),
+  synthesized like the SFX — root/fifth/octave layers breathing on
+  slow LFOs, every partial an integer number of cycles per 12-second
+  loop so the seam is mathematically silent. Crossfades on region
+  change; the first click anywhere opens the audio device (the
+  browser's autoplay gesture); mute stops it.
 - **Sound effects** (kira + cpal): seven procedurally synthesized
   sounds — cast whoosh, kill slash+chime, miss thud, blocked clank,
   cursed tritone, death boom, timeout wobble. No audio assets: every

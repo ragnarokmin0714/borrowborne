@@ -64,7 +64,8 @@ who want the true roguelike covenant.
 - [x] SFX first (kira: native + WebAudio): seven synthesized sounds,
       one per dramatic beat; lazy device init doubles as the browser
       autoplay gesture; mute toggle persisted.
-- [ ] BGM second: looped region themes (synthesized or CC0 assets).
+- [x] BGM second: synthesized seamless drone per region, crossfading
+      on travel; no assets, no licensing.
 - [ ] Performance trials (honest LeetCode-style TLE, not fake Big-O
       detection): late puzzles feed n=10⁵ inputs under the existing
       timeout — O(n²) bounces off "the monster's armor"; finish-time

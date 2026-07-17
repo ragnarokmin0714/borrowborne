@@ -193,7 +193,21 @@ impl BorrowborneApp {
     /// Flip the mute toggle (chrome button).
     pub fn toggle_mute(&mut self) {
         self.muted = !self.muted;
+        if self.muted {
+            if let Some(audio) = &mut self.audio {
+                audio.stop_bgm();
+            }
+        }
         self.dirty = true;
+    }
+
+    /// Which drone belongs to the current view: 0 is the map, then
+    /// one per chapter in order.
+    fn theme_ix(&self) -> usize {
+        match self.screen {
+            Screen::Map => 0,
+            Screen::Puzzle => 1 + self.chapter_ix,
+        }
     }
 
     pub fn muted(&self) -> bool {
@@ -406,6 +420,19 @@ impl BorrowborneApp {
             Screen::Puzzle => puzzle::central(self, ctx),
         }
         self.fx.tick(ctx);
+
+        // Audio upkeep: the first click anywhere opens the device
+        // (that click is the browser's required gesture), and the
+        // drone follows whichever screen the hunter is on.
+        if !self.muted {
+            if self.audio.is_none() && ctx.input(|i| i.pointer.any_pressed()) {
+                self.audio = Audio::try_new();
+            }
+            let theme = self.theme_ix();
+            if let Some(audio) = &mut self.audio {
+                audio.ensure_bgm(theme);
+            }
+        }
     }
 }
 
