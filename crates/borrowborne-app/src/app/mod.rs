@@ -77,6 +77,10 @@ pub struct BorrowborneApp {
     audio: Option<Audio>,
     /// Sound toggle, persisted.
     muted: bool,
+    /// Effect volume, 0..=1, persisted.
+    sfx_vol: f32,
+    /// Music volume, 0..=1, persisted.
+    bgm_vol: f32,
 }
 
 impl BorrowborneApp {
@@ -95,6 +99,12 @@ impl BorrowborneApp {
             }
             if let Some(m) = eframe::get_value(storage, "muted") {
                 app.muted = m;
+            }
+            if let Some(v) = eframe::get_value(storage, "sfx_vol") {
+                app.sfx_vol = v;
+            }
+            if let Some(v) = eframe::get_value(storage, "bgm_vol") {
+                app.bgm_vol = v;
             }
         }
         app.ensure_curse();
@@ -137,6 +147,8 @@ impl BorrowborneApp {
             fx: Fx::default(),
             audio: None,
             muted: false,
+            sfx_vol: 1.0,
+            bgm_vol: 0.8,
         };
         app.ensure_curse();
         app
@@ -199,6 +211,14 @@ impl BorrowborneApp {
             }
         }
         self.dirty = true;
+    }
+
+    /// Push the current slider volumes onto the audio routes.
+    fn apply_volumes(&mut self) {
+        let (sfx, bgm) = (self.sfx_vol, self.bgm_vol);
+        if let Some(audio) = &mut self.audio {
+            audio.set_volumes(sfx, bgm);
+        }
     }
 
     /// Which drone belongs to the current view: 0 is the map, then
@@ -427,6 +447,7 @@ impl BorrowborneApp {
         if !self.muted {
             if self.audio.is_none() && ctx.input(|i| i.pointer.any_pressed()) {
                 self.audio = Audio::try_new();
+                self.apply_volumes();
             }
             let theme = self.theme_ix();
             if let Some(audio) = &mut self.audio {
@@ -452,5 +473,7 @@ impl eframe::App for BorrowborneApp {
         eframe::set_value(storage, "progress", &self.progress);
         eframe::set_value(storage, "lang", &self.lang);
         eframe::set_value(storage, "muted", &self.muted);
+        eframe::set_value(storage, "sfx_vol", &self.sfx_vol);
+        eframe::set_value(storage, "bgm_vol", &self.bgm_vol);
     }
 }

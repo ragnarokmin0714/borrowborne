@@ -20,9 +20,31 @@ pub fn top_bar(app: &mut BorrowborneApp, ctx: &egui::Context) {
                 app.show_map();
             }
             let speaker = if app.muted() { "🔇" } else { "🔊" };
-            if ui.button(speaker).clicked() {
-                app.toggle_mute();
-            }
+            ui.menu_button(speaker, |ui| {
+                ui.set_min_width(170.0);
+                let mut muted = app.muted();
+                if ui.checkbox(&mut muted, tr.sound_mute).changed() {
+                    app.toggle_mute();
+                }
+                let sfx = ui
+                    .horizontal(|ui| {
+                        ui.label(tr.sound_sfx);
+                        ui.add(egui::Slider::new(&mut app.sfx_vol, 0.0..=1.0).show_value(false))
+                            .changed()
+                    })
+                    .inner;
+                let bgm = ui
+                    .horizontal(|ui| {
+                        ui.label(tr.sound_bgm);
+                        ui.add(egui::Slider::new(&mut app.bgm_vol, 0.0..=1.0).show_value(false))
+                            .changed()
+                    })
+                    .inner;
+                if sfx || bgm {
+                    app.apply_volumes();
+                    app.dirty = true;
+                }
+            });
 
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 egui::ComboBox::from_id_source("lang")

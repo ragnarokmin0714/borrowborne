@@ -8,7 +8,8 @@
 use std::sync::Arc;
 
 use kira::sound::static_sound::StaticSoundData;
-use kira::{AudioManager, AudioManagerSettings, DefaultBackend, Frame};
+use kira::track::{TrackBuilder, TrackHandle};
+use kira::{AudioManager, AudioManagerSettings, Decibels, DefaultBackend, Frame, Tween};
 
 const SAMPLE_RATE: u32 = 44_100;
 
@@ -32,7 +33,12 @@ pub enum Sfx {
 }
 
 pub struct Audio {
-    manager: AudioManager,
+    /// Owns the device; sounds play on the two sub-tracks below.
+    _manager: AudioManager,
+    /// SFX route, so effect volume moves independently of music.
+    sfx_track: TrackHandle,
+    /// BGM route.
+    bgm_track: TrackHandle,
     bank: Vec<(Sfx, StaticSoundData)>,
     /// One looping drone per theme; see [`themes`].
     themes: Vec<StaticSoundData>,
@@ -44,7 +50,10 @@ impl Audio {
     /// Open the audio device and render the bank. `None` when there is
     /// no device (CI, headless) — the game plays on, silently.
     pub fn try_new() -> Option<Self> {
-        let manager = AudioManager::<DefaultBackend>::new(AudioManagerSettings::default()).ok()?;
+        let mut manager =
+            AudioManager::<DefaultBackend>::new(AudioManagerSettings::default()).ok()?;
+        let sfx_track = manager.add_sub_track(TrackBuilder::new()).ok()?;
+        let bgm_track = manager.add_sub_track(TrackBuilder::new()).ok()?;
         let bank = vec![
             (Sfx::Cast, render(cast_wave, 0.16)),
             (Sfx::Kill, render(kill_wave, 0.35)),
@@ -55,16 +64,26 @@ impl Audio {
             (Sfx::Timeout, render(timeout_wave, 0.45)),
         ];
         Some(Self {
-            manager,
+            _manager: manager,
+            sfx_track,
+            bgm_track,
             bank,
             themes: themes(),
             bgm: None,
         })
     }
 
+    /// Apply user volumes (0..=1 each) to the two routes.
+    pub fn set_volumes(&mut self, sfx: f32, bgm: f32) {
+        self.sfx_track
+            .set_volume(to_decibels(sfx), Tween::default());
+        self.bgm_track
+            .set_volume(to_decibels(bgm), Tween::default());
+    }
+
     pub fn play(&mut self, sfx: Sfx) {
         if let Some((_, sound)) = self.bank.iter().find(|(s, _)| *s == sfx) {
-            let _ = self.manager.play(sound.clone());
+            let _ = self.sfx_track.play(sound.clone());
         }
     }
 
@@ -78,7 +97,7 @@ impl Audio {
         let Some(sound) = self.themes.get(theme) else {
             return;
         };
-        if let Ok(handle) = self.manager.play(sound.clone()) {
+        if let Ok(handle) = self.bgm_track.play(sound.clone()) {
             self.bgm = Some((theme, handle));
         }
     }
@@ -86,11 +105,21 @@ impl Audio {
     /// Fade the current drone into silence (mute, shutdown).
     pub fn stop_bgm(&mut self) {
         if let Some((_, mut handle)) = self.bgm.take() {
-            handle.stop(kira::Tween {
+            handle.stop(Tween {
                 duration: std::time::Duration::from_millis(900),
                 ..Default::default()
             });
         }
+    }
+}
+
+/// Slider position (0..=1) to decibels: perceptual-ish curve with a
+/// hard floor at silence.
+fn to_decibels(v: f32) -> Decibels {
+    if v <= 0.005 {
+        Decibels::SILENCE
+    } else {
+        Decibels(20.0 * v.clamp(0.0, 1.0).log10())
     }
 }
 
@@ -134,16 +163,20 @@ fn themes() -> Vec<StaticSoundData> {
     THEME_ROOTS.iter().map(|&root| render_drone(root)).collect()
 }
 
-/// Layered drone: root + fifth + octave, breathing on slow LFOs whose
-/// rates are integer cycles per loop.
+/// Layered drone breathing on slow LFOs whose rates are integer
+/// cycles per loop. The upper partials (×3, ×4, ×6) are not garnish:
+/// laptop and phone speakers cannot reproduce the 37–62 Hz roots at
+/// all, so the mid layers are what most listeners actually hear.
 fn drone_wave(root: f32, t: f32) -> f32 {
     let lfo =
         |cycles: f32, phase: f32| 0.55 + 0.45 * (TAU * cycles * t / BGM_LOOP_SECS + phase).sin();
-    let fifth = root * 1.5;
-    let octave = root * 2.0;
-    (TAU * root * t).sin() * 0.5 * lfo(1.0, 0.0)
-        + (TAU * fifth * t).sin() * 0.3 * lfo(2.0, 1.7)
-        + (TAU * octave * t).sin() * 0.2 * lfo(3.0, 3.9)
+    let p = |mult: f32| (TAU * root * mult * t).sin();
+    p(1.0) * 0.40 * lfo(1.0, 0.0)
+        + p(1.5) * 0.25 * lfo(2.0, 1.7)
+        + p(2.0) * 0.22 * lfo(3.0, 3.9)
+        + p(3.0) * 0.18 * lfo(2.0, 0.9)
+        + p(4.0) * 0.14 * lfo(4.0, 2.6)
+        + p(6.0) * 0.08 * lfo(5.0, 5.1)
 }
 
 fn render_drone(root: f32) -> StaticSoundData {
@@ -151,8 +184,8 @@ fn render_drone(root: f32) -> StaticSoundData {
     let frames: Arc<[Frame]> = (0..n)
         .map(|i| {
             let t = i as f32 / BGM_SAMPLE_RATE as f32;
-            // Quiet by construction: BGM sits far under the SFX.
-            Frame::from_mono(drone_wave(root, t) * 0.16)
+            // Sits under the SFX; the BGM track volume does the rest.
+            Frame::from_mono(drone_wave(root, t) * 0.32)
         })
         .collect();
     StaticSoundData {

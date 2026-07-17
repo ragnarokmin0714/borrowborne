@@ -42,6 +42,10 @@ pub static ZH: Tr = Tr {
 
     curse_label: "詛咒",
 
+    sound_mute: "靜音",
+    sound_sfx: "音效",
+    sound_bgm: "音樂",
+
     hunter_label: "獵人",
     map_title: "長夜之地",
     map_button: "🗺 地圖",

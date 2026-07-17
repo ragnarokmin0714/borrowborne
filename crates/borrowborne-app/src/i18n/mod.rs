@@ -104,6 +104,11 @@ pub struct Tr {
     // Run curse.
     pub curse_label: &'static str,
 
+    // Sound menu.
+    pub sound_mute: &'static str,
+    pub sound_sfx: &'static str,
+    pub sound_bgm: &'static str,
+
     // World map.
     pub hunter_label: &'static str,
     pub map_title: &'static str,

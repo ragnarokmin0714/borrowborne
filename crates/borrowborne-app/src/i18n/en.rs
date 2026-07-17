@@ -42,6 +42,10 @@ pub static EN: Tr = Tr {
 
     curse_label: "curse",
 
+    sound_mute: "Mute",
+    sound_sfx: "Effects",
+    sound_bgm: "Music",
+
     hunter_label: "Hunter",
     map_title: "The Night Lands",
     map_button: "🗺 Map",

@@ -7,6 +7,11 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ### Added
 
+- **Volume controls**: the speaker button is now a menu — mute plus
+  independent Effects and Music sliders (kira sub-tracks), persisted.
+- **BGM audibility**: drones gained ×3/×4/×6 mid partials — laptop
+  and phone speakers cannot reproduce the 37–62 Hz roots at all, so
+  without the mids the music was physically inaudible on them.
 - **BGM**: one seamless ambient drone per region (plus the map),
   synthesized like the SFX — root/fifth/octave layers breathing on
   slow LFOs, every partial an integer number of cycles per 12-second
