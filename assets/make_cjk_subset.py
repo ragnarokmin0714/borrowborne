@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 """Regenerate the embedded CJK subset font for the app.
 
-Collects every character used in the i18n sources, adds the full kana
-and CJK-punctuation/fullwidth ranges (so small future edits don't need
-a re-subset), and cuts a tiny OTF out of Noto Sans CJK TC.
+Collects every non-ASCII character used anywhere in the app sources
+(i18n strings AND symbol glyphs like │ ▼ ◉ that egui's proportional
+fonts lack), adds the full kana and CJK-punctuation/fullwidth ranges,
+and cuts a tiny OTF out of Noto Sans CJK TC.
 
 Usage:
     python3 assets/make_cjk_subset.py path/to/NotoSansCJKtc-Regular.otf
 
 Source font: https://github.com/notofonts/noto-cjk (SIL OFL 1.1).
 Output: crates/borrowborne-app/assets/cjk-subset.otf
+
+The `fonts_cover_i18n` test verifies the result; symbols the source
+font lacks entirely (emoji, alchemical marks) must instead be chars
+egui's own fonts carry — the test tells you which ones fail.
 """
 
 import pathlib
@@ -17,7 +22,7 @@ import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-I18N = ROOT / "crates/borrowborne-app/src/i18n"
+SRC = ROOT / "crates/borrowborne-app/src"
 OUT = ROOT / "crates/borrowborne-app/assets/cjk-subset.otf"
 
 # Always-included ranges: CJK punctuation, kana, fullwidth forms.
@@ -26,10 +31,11 @@ RANGES = ["3000-303F", "3040-309F", "30A0-30FF", "FF01-FF60"]
 
 def used_chars() -> set[str]:
     chars: set[str] = set()
-    for path in sorted(I18N.glob("*.rs")):
+    for path in sorted(SRC.rglob("*.rs")):
         chars.update(path.read_text(encoding="utf-8"))
-    # Only characters the default egui fonts cannot draw.
-    return {c for c in chars if ord(c) >= 0x3000}
+    # Everything beyond ASCII: the subsetter silently skips codepoints
+    # the source font lacks, and the coverage test judges the result.
+    return {c for c in chars if ord(c) > 0x7F}
 
 
 def main() -> None:

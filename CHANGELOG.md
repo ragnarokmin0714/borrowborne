@@ -5,6 +5,20 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ## [Unreleased]
 
+### Fixed (issue #1 feedback)
+
+- **Boxes (□) instead of symbols on the web**: the subset font now
+  carries every non-ASCII glyph the sources use (│ ▼ ◉ were only in
+  the monospace default); the tombstone marker and curse icon were
+  characters no shipped font has and are now ✝ and 🌑. The coverage
+  test now scans *all* app sources against the union of shipped
+  fonts, so an uncovered character fails CI.
+- **Web favicon**: the hunter's mark now marks the browser tab.
+- **Untranslated tagline**: "Fear the old blood…" moved into the
+  i18n table (zh-Hant / ja translated). Puzzle content itself remains
+  authored in English by design — content localization is a separate
+  roadmap item.
+
 ## [0.5.0] - 2026-07-17
 
 ### Added

@@ -54,6 +54,9 @@ pub struct Voice {
 /// All user-facing UI strings for one language.
 pub struct Tr {
     // Chrome.
+    /// The tagline under the title. (`constants::APP_TAGLINE` stays
+    /// the canonical English for docs and the window title.)
+    pub tagline: &'static str,
     pub language: &'static str,
     pub lives: &'static str,
     pub progress: &'static str,

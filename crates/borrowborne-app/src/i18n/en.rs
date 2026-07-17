@@ -1,6 +1,7 @@
 use super::{Tr, Voice};
 
 pub static EN: Tr = Tr {
+    tagline: "Fear the old blood. Respect the borrow checker.",
     language: "Language",
     lives: "Lives",
     progress: "Progress",

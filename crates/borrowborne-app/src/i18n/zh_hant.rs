@@ -1,6 +1,7 @@
 use super::{Tr, Voice};
 
 pub static ZH: Tr = Tr {
+    tagline: "畏懼古血，敬畏借用檢查器。",
     language: "語言",
     lives: "生命",
     progress: "進度",

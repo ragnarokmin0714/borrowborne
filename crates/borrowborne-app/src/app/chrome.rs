@@ -2,7 +2,7 @@
 
 use eframe::egui::{self, RichText};
 
-use borrowborne_core::constants::{APP_NAME, APP_TAGLINE};
+use borrowborne_core::constants::APP_NAME;
 
 use crate::i18n::Lang;
 use crate::theme::{BLOOD, RUNE_GOLD};
@@ -15,7 +15,7 @@ pub fn top_bar(app: &mut BorrowborneApp, ctx: &egui::Context) {
         ui.add_space(4.0);
         ui.horizontal(|ui| {
             ui.label(RichText::new(APP_NAME).strong().size(20.0).color(BLOOD));
-            ui.label(RichText::new(APP_TAGLINE).italics().weak());
+            ui.label(RichText::new(tr.tagline).italics().weak());
             if ui.button(tr.map_button).clicked() {
                 app.show_map();
             }
@@ -39,9 +39,11 @@ pub fn top_bar(app: &mut BorrowborneApp, ctx: &egui::Context) {
 
                 ui.separator();
 
-                // The night's curse; hover for its rules.
+                // The night's curse; hover for its rules. (🌑: a new
+                // run rises under a new moon — and unlike U+1F70F, the
+                // glyph exists in egui's fonts on every platform.)
                 if let Some(curse) = app.active_curse() {
-                    ui.label(RichText::new(format!("🜏 {}", curse.name)).color(RUNE_GOLD))
+                    ui.label(RichText::new(format!("🌑 {}", curse.name)).color(RUNE_GOLD))
                         .on_hover_text(&curse.blurb);
                     ui.label(RichText::new(tr.curse_label).weak());
                     ui.separator();
@@ -68,8 +70,10 @@ pub fn top_bar(app: &mut BorrowborneApp, ctx: &egui::Context) {
 
                 ui.separator();
 
+                // ✝ not U+2670: the Syriac cross has no glyph in any
+                // font we ship, and rendered as a box on the web.
                 ui.label(
-                    RichText::new(format!("♰ {}", app.progress.total_deaths))
+                    RichText::new(format!("✝ {}", app.progress.total_deaths))
                         .color(RUNE_GOLD)
                         .weak(),
                 );

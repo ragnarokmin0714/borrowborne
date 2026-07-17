@@ -1,92 +1,67 @@
-//! The embedded CJK subset must cover every CJK character the i18n
-//! strings use — on the web it is the only CJK source, and a missing
-//! glyph renders as an empty box no other test would catch.
+//! Every non-ASCII character in the app sources must have a glyph in
+//! at least one font we actually ship: egui's four defaults plus the
+//! embedded CJK subset. A miss renders as an empty box in production —
+//! exactly the bug reported in issue #1 — and nothing else catches it.
 //!
-//! Fails? Rerun `assets/make_cjk_subset.py` (see its docstring).
+//! Fails? Either rerun `assets/make_cjk_subset.py` (char exists in
+//! Noto CJK TC) or swap the character for one egui's fonts carry.
+
+use std::path::{Path, PathBuf};
 
 use borrowborne_app::fonts::CJK_SUBSET;
-use borrowborne_app::i18n::Lang;
+use eframe::egui;
 
-/// Characters egui's default fonts cannot draw: CJK ideographs, kana,
-/// CJK punctuation, fullwidth forms.
-fn needs_cjk(c: char) -> bool {
-    ('\u{3000}'..='\u{9FFF}').contains(&c) || ('\u{FF00}'..='\u{FFEF}').contains(&c)
-}
-
-#[test]
-fn fonts_cover_i18n() {
-    let face = ttf_parser::Face::parse(CJK_SUBSET, 0).expect("subset font must parse");
-
-    let mut missing = Vec::new();
-    for lang in Lang::ALL {
-        let tr = lang.strings();
-        // Every user-facing string in the Tr struct, plus the picker label.
-        let mut text = String::from(lang.label());
-        text.push_str(&all_strings(tr));
-        for c in text.chars().filter(|&c| needs_cjk(c)) {
-            if face.glyph_index(c).is_none() {
-                missing.push(c);
+/// Non-ASCII chars from every `.rs` under `src/`.
+fn source_chars() -> Vec<char> {
+    fn walk(dir: &Path, out: &mut String) {
+        for entry in std::fs::read_dir(dir).expect("readable src dir").flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                walk(&path, out);
+            } else if path.extension().is_some_and(|e| e == "rs") {
+                out.push_str(&std::fs::read_to_string(&path).expect("readable source"));
             }
         }
     }
-    missing.sort_unstable();
-    missing.dedup();
-    assert!(
-        missing.is_empty(),
-        "subset font lacks glyphs for: {missing:?} — rerun assets/make_cjk_subset.py"
+    let mut text = String::new();
+    walk(
+        &PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src"),
+        &mut text,
     );
+    let mut chars: Vec<char> = text
+        .chars()
+        // Skip format controls (variation selectors, ZWJ): they are
+        // instructions, not glyphs.
+        .filter(|&c| c as u32 > 0x7F && c != '\u{FE0F}' && c != '\u{200D}')
+        .collect();
+    chars.sort_unstable();
+    chars.dedup();
+    chars
 }
 
-/// Concatenate every field of Tr. Kept dumb on purpose: when a field
-/// is added, the compiler does not force an update here, but the
-/// glyphs of a forgotten field were almost certainly already used
-/// elsewhere; the subset ranges (kana, punctuation) absorb the rest.
-fn all_strings(tr: &borrowborne_app::i18n::Tr) -> String {
-    let voices = [
-        &tr.e0382, &tr.e0384, &tr.e0308, &tr.e0369, &tr.e0499, &tr.e0502, &tr.e0106, &tr.e0425,
-    ];
-    let mut s = [
-        tr.language,
-        tr.lives,
-        tr.progress,
-        tr.deaths_total,
-        tr.cast,
-        tr.casting,
-        tr.reset_code,
-        tr.next_puzzle,
-        tr.prev_puzzle,
-        tr.editor_hint,
-        tr.solved_badge,
-        tr.verdict_pass_title,
-        tr.verdict_pass_body,
-        tr.verdict_compile_title,
-        tr.verdict_compile_body,
-        tr.verdict_trial_title,
-        tr.verdict_trial_body,
-        tr.verdict_death_title,
-        tr.verdict_death_body,
-        tr.verdict_timeout_title,
-        tr.verdict_timeout_body,
-        tr.hint_whisper,
-        tr.hint_exhausted,
-        tr.echoes,
-        tr.stain_here,
-        tr.stain_away,
-        tr.raw_diagnostic,
-        tr.combat_miss,
-        tr.combat_blocked,
-        tr.combat_lost,
-        tr.combat_cursed,
-        tr.curse_label,
-        tr.map_title,
-        tr.map_button,
-        tr.map_enter,
-        tr.map_locked_hint,
-    ]
-    .concat();
-    for v in voices {
-        s.push_str(v.line);
-        s.push_str(v.note);
-    }
-    s
+#[test]
+fn fonts_cover_every_source_glyph() {
+    // The union of everything we ship: egui's defaults + our subset.
+    let defaults = egui::FontDefinitions::default();
+    let mut faces: Vec<Vec<u8>> = defaults
+        .font_data
+        .values()
+        .map(|d| d.font.to_vec())
+        .collect();
+    faces.push(CJK_SUBSET.to_vec());
+    let faces: Vec<ttf_parser::Face> = faces
+        .iter()
+        .map(|bytes| ttf_parser::Face::parse(bytes, 0).expect("shipped font must parse"))
+        .collect();
+
+    let missing: Vec<char> = source_chars()
+        .into_iter()
+        .filter(|&c| !faces.iter().any(|f| f.glyph_index(c).is_some()))
+        .collect();
+
+    assert!(
+        missing.is_empty(),
+        "no shipped font has a glyph for: {missing:?} — rerun \
+         assets/make_cjk_subset.py, or swap the character for a covered one"
+    );
 }

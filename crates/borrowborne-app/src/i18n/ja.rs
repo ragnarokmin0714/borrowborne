@@ -1,6 +1,7 @@
 use super::{Tr, Voice};
 
 pub static JA: Tr = Tr {
+    tagline: "古き血を恐れよ。借用チェッカーを敬え。",
     language: "言語",
     lives: "残機",
     progress: "進行度",
