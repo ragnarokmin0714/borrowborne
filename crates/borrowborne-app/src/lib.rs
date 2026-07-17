@@ -2,6 +2,7 @@
 //! layout probe can drive full frames without a window.
 
 pub mod app;
+pub mod audio;
 pub mod fonts;
 pub mod fx;
 pub mod i18n;

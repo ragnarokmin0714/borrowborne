@@ -42,12 +42,12 @@ jobs:
           version="${GITHUB_REF_NAME#v}"
           echo "ASSET=borrowborne-${version}-${{ matrix.label }}.${{ matrix.ext }}" >> "$GITHUB_ENV"
 
-      - name: Install GUI build dependencies (Linux)
+      - name: Install GUI and audio build dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            libxkbcommon-dev libwayland-dev \
+            libxkbcommon-dev libwayland-dev libasound2-dev \
             libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
 
       - name: Build release binary

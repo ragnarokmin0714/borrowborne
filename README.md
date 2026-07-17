@@ -66,8 +66,14 @@ local `rustc` to judge your spells — MVP backend; a wasmtime sandbox is
 on the roadmap):
 
 ```sh
+# Linux only: ALSA headers + pkg-config, to compile the audio backend
+sudo apt-get install libasound2-dev pkg-config
+
 cargo run --release -p borrowborne-app
 ```
+
+(Windows/macOS need no extra audio setup; prebuilt Linux binaries only
+need the runtime `libasound2`, present on any desktop distro.)
 
 Or grab a prebuilt binary from
 [Releases](https://github.com/ragnarokmin0714/borrowborne/releases) —

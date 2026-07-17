@@ -15,6 +15,7 @@ use borrowborne_core::{Curriculum, Curse, CurseBook, Progress, Verdict};
 #[cfg(not(target_arch = "wasm32"))]
 use borrowborne_runner::{RustcLocal, Sandbox};
 
+use crate::audio::{Audio, Sfx};
 use crate::fx::Fx;
 use crate::i18n::Lang;
 use crate::{fonts, theme};
@@ -70,6 +71,12 @@ pub struct BorrowborneApp {
     hints_shown: usize,
 
     fx: Fx,
+    /// Lazily opened on the first cast: that click is also the user
+    /// gesture browsers require before audio may play. `None` means
+    /// not-yet-tried or no device — both play on silently.
+    audio: Option<Audio>,
+    /// Sound toggle, persisted.
+    muted: bool,
 }
 
 impl BorrowborneApp {
@@ -85,6 +92,9 @@ impl BorrowborneApp {
             }
             if let Some(l) = eframe::get_value(storage, "lang") {
                 app.lang = l;
+            }
+            if let Some(m) = eframe::get_value(storage, "muted") {
+                app.muted = m;
             }
         }
         app.ensure_curse();
@@ -125,6 +135,8 @@ impl BorrowborneApp {
             dirty: false,
             hints_shown: 0,
             fx: Fx::default(),
+            audio: None,
+            muted: false,
         };
         app.ensure_curse();
         app
@@ -164,6 +176,30 @@ impl BorrowborneApp {
         self.cast_rx.is_some()
     }
 
+    /// Play a sound, opening the device on first use. A missing device
+    /// or a muted hunter both stay silent without complaint.
+    fn sfx(&mut self, sfx: Sfx) {
+        if self.muted {
+            return;
+        }
+        if self.audio.is_none() {
+            self.audio = Audio::try_new();
+        }
+        if let Some(audio) = &mut self.audio {
+            audio.play(sfx);
+        }
+    }
+
+    /// Flip the mute toggle (chrome button).
+    pub fn toggle_mute(&mut self) {
+        self.muted = !self.muted;
+        self.dirty = true;
+    }
+
+    pub fn muted(&self) -> bool {
+        self.muted
+    }
+
     /// Kick off a cast; the UI keeps breathing while the judge thinks.
     ///
     /// Native: a worker thread runs the local `rustc`. Web: the browser
@@ -183,6 +219,7 @@ impl BorrowborneApp {
                     tr.combat_cursed,
                     theme::BLOOD,
                 );
+                self.sfx(Sfx::Cursed);
                 self.verdict = Some(Verdict::CompileError(refusal));
                 return;
             }
@@ -192,6 +229,7 @@ impl BorrowborneApp {
                 self.dirty = true;
             }
         }
+        self.sfx(Sfx::Cast);
         let (tx, rx) = mpsc::channel();
         self.cast_rx = Some(rx);
         self.verdict = None;
@@ -255,17 +293,21 @@ impl BorrowborneApp {
                     self.fx
                         .float_text(stage, format!("+{gained} ◉"), theme::RUNE_GOLD);
                 }
+                self.sfx(Sfx::Kill);
             }
             Verdict::CompileError(_) => {
                 self.fx
                     .float_text(stage, tr.combat_miss, egui::Color32::GRAY);
+                self.sfx(Sfx::Miss);
             }
             Verdict::TrialFailed(_) => {
                 self.fx.float_text(stage, tr.combat_blocked, theme::EMBER);
+                self.sfx(Sfx::Blocked);
             }
             Verdict::Timeout => {
                 self.fx
                     .float_text(stage, tr.combat_lost, egui::Color32::GRAY);
+                self.sfx(Sfx::Timeout);
             }
             Verdict::Panicked(_) => {
                 self.fx.on_death();
@@ -274,6 +316,7 @@ impl BorrowborneApp {
                     self.fx
                         .float_text(stage, format!("☠ -{dropped} ◉"), theme::BLOOD);
                 }
+                self.sfx(Sfx::Death);
             }
         }
         self.verdict = Some(verdict);
@@ -381,5 +424,6 @@ impl eframe::App for BorrowborneApp {
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
         eframe::set_value(storage, "progress", &self.progress);
         eframe::set_value(storage, "lang", &self.lang);
+        eframe::set_value(storage, "muted", &self.muted);
     }
 }

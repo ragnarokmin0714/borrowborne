@@ -7,6 +7,13 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ### Added
 
+- **Sound effects** (kira + cpal): seven procedurally synthesized
+  sounds — cast whoosh, kill slash+chime, miss thud, blocked clank,
+  cursed tritone, death boom, timeout wobble. No audio assets: every
+  sound is math rendered at init. The device opens lazily on the
+  first cast, which doubles as the user gesture browsers require.
+  Mute toggle (🔊/🔇) in the top bar, persisted. Linux builds now
+  need `libasound2-dev` + `pkg-config` (README + CI updated).
 - **Hunter name** (issue #1 suggestion): every hunter starts as
   "Good Hunter" and can be renamed on the world map. Persisted with
   progress; empty names fall back, long names clip at 24 chars.

@@ -21,6 +21,9 @@ eframe = { version = "0.28", default-features = false, features = [
     "persistence", # remember language / progress across restarts
 ] }
 egui = "0.28"
+# SFX playback. No codec features: every sound is synthesized in
+# audio.rs, so only the cpal device backend is needed.
+kira = { version = "0.12", default-features = false, features = ["cpal"] }
 serde = { workspace = true }
 
 # Web build (trunk + GitHub Pages): the browser fetches the Rust

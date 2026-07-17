@@ -19,6 +19,10 @@ pub fn top_bar(app: &mut BorrowborneApp, ctx: &egui::Context) {
             if ui.button(tr.map_button).clicked() {
                 app.show_map();
             }
+            let speaker = if app.muted() { "🔇" } else { "🔊" };
+            if ui.button(speaker).clicked() {
+                app.toggle_mute();
+            }
 
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 egui::ComboBox::from_id_source("lang")
