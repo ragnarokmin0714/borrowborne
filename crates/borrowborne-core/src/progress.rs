@@ -22,6 +22,17 @@ pub struct Bloodstain {
     pub amount: u64,
 }
 
+/// How forgiving the run is. Normal is the intended balance; Easy is
+/// for players who find Rust hard enough already — it makes the lantern
+/// free so hints never compete with the echo economy.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum Difficulty {
+    #[default]
+    Normal,
+    /// Hints cost no echoes (and so are effectively unlimited).
+    Easy,
+}
+
 /// Persistent player progress. Serialized by the app via eframe's
 /// persistence; core only defines the shape and the rules.
 ///
@@ -62,6 +73,9 @@ pub struct Progress {
     /// Best speed grade per solved puzzle (S beats A beats B).
     #[serde(default)]
     pub grades: HashMap<String, Grade>,
+    /// Chosen difficulty; Easy makes hints free.
+    #[serde(default)]
+    pub difficulty: Difficulty,
 }
 
 fn starting_echoes() -> u64 {
@@ -80,6 +94,7 @@ impl Default for Progress {
             active_curse: None,
             hunter_name: String::new(),
             grades: HashMap::new(),
+            difficulty: Difficulty::Normal,
         }
     }
 }
@@ -183,15 +198,19 @@ impl Progress {
         false
     }
 
-    /// Price of the given hint tier (0-based).
-    pub fn hint_cost(tier: usize) -> u64 {
+    /// Price of the given hint tier (0-based). Free on Easy — the
+    /// lantern never competes with the echo economy there.
+    pub fn hint_cost(&self, tier: usize) -> u64 {
+        if self.difficulty == Difficulty::Easy {
+            return 0;
+        }
         HINT_COSTS.get(tier).copied().unwrap_or(0)
     }
 
     /// Buy the given hint tier. Returns `false` (and deducts nothing)
-    /// when the purse cannot cover it.
+    /// when the purse cannot cover it. Always succeeds on Easy (cost 0).
     pub fn buy_hint(&mut self, tier: usize) -> bool {
-        let cost = Self::hint_cost(tier);
+        let cost = self.hint_cost(tier);
         if self.echoes < cost {
             return false;
         }

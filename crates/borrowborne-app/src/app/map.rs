@@ -3,6 +3,8 @@
 
 use eframe::egui::{self, RichText};
 
+use borrowborne_core::Difficulty;
+
 use crate::theme::{BLOOD, RUNE_GOLD};
 
 use super::BorrowborneApp;
@@ -39,6 +41,31 @@ pub fn central(app: &mut BorrowborneApp, ctx: &egui::Context) {
                 app.dirty = true;
             }
         });
+        ui.add_space(4.0);
+
+        // The covenant: Merciful makes the lantern (hints) free, for
+        // players who find the borrow checker punishment enough.
+        ui.horizontal(|ui| {
+            let indent = (ui.available_width() - 220.0).max(0.0) / 2.0;
+            ui.add_space(indent);
+            ui.label(RichText::new(tr.difficulty_label).weak());
+            let mut diff = app.progress.difficulty;
+            egui::ComboBox::from_id_source("difficulty")
+                .selected_text(match diff {
+                    Difficulty::Normal => tr.difficulty_normal,
+                    Difficulty::Easy => tr.difficulty_easy,
+                })
+                .show_ui(ui, |ui| {
+                    ui.selectable_value(&mut diff, Difficulty::Normal, tr.difficulty_normal);
+                    ui.selectable_value(&mut diff, Difficulty::Easy, tr.difficulty_easy);
+                });
+            if diff != app.progress.difficulty {
+                app.progress.difficulty = diff;
+                app.dirty = true;
+            }
+        })
+        .response
+        .on_hover_text(tr.difficulty_hint);
         ui.add_space(8.0);
 
         egui::ScrollArea::vertical().show(ui, |ui| {

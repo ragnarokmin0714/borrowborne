@@ -38,6 +38,7 @@ fn scene_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
             ui.add_space(6.0);
             let puzzle_id = app.current_puzzle().id.clone();
             let hints = app.current_puzzle().hints.clone();
+            let toolbox = app.current_puzzle().toolbox.clone();
             let stained_here = app
                 .progress
                 .bloodstain
@@ -56,6 +57,21 @@ fn scene_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
                     );
                 }
 
+                // The toolbox: free, always shown — the syntax and
+                // methods this puzzle may call for, named but not
+                // explained. A nudge that competes with neither the
+                // echo economy nor the paid hints below.
+                if !toolbox.is_empty() {
+                    ui.add_space(10.0);
+                    ui.separator();
+                    ui.label(RichText::new(tr.toolbox_label).strong().size(13.0));
+                    ui.horizontal_wrapped(|ui| {
+                        for tool in &toolbox {
+                            ui.label(RichText::new(tool).monospace().size(12.0).color(RUNE_GOLD));
+                        }
+                    });
+                }
+
                 if hints.is_empty() {
                     return;
                 }
@@ -72,13 +88,23 @@ fn scene_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
                     ui.add_space(2.0);
                 }
                 if app.hints_shown < hints.len() {
-                    let cost = borrowborne_core::Progress::hint_cost(app.hints_shown);
-                    let label = format!(
-                        "{} — {cost}◉ ({}/{})",
-                        tr.hint_whisper,
-                        app.hints_shown + 1,
-                        hints.len()
-                    );
+                    let cost = app.progress.hint_cost(app.hints_shown);
+                    // Free hints (Easy) read as "whisper", not "— 0 ◉".
+                    let label = if cost == 0 {
+                        format!(
+                            "{} ({}/{})",
+                            tr.hint_whisper,
+                            app.hints_shown + 1,
+                            hints.len()
+                        )
+                    } else {
+                        format!(
+                            "{} — {cost}◉ ({}/{})",
+                            tr.hint_whisper,
+                            app.hints_shown + 1,
+                            hints.len()
+                        )
+                    };
                     let affordable = app.progress.echoes >= cost;
                     if ui
                         .add_enabled(affordable, egui::Button::new(label))

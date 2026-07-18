@@ -20,6 +20,7 @@ fn tiny_curriculum() -> Curriculum {
                 starter_code: String::new(),
                 trial: "TRIAL:".into(),
                 hints: vec![],
+                toolbox: vec![],
                 solution: String::new(),
             }],
         }],
@@ -163,6 +164,26 @@ fn hints_cost_echoes_and_refuse_the_broke() {
 }
 
 #[test]
+fn easy_mode_makes_hints_free_and_unrefusable() {
+    use borrowborne_core::Difficulty;
+    let mut p = Progress {
+        echoes: 0, // broke: Normal would refuse every tier
+        difficulty: Difficulty::Easy,
+        ..Progress::default()
+    };
+    for tier in 0..3 {
+        assert_eq!(p.hint_cost(tier), 0, "Easy: every tier is free");
+        assert!(p.buy_hint(tier), "Easy: the lantern never refuses");
+    }
+    assert_eq!(p.echoes, 0, "free hints deduct nothing");
+
+    // Difficulty rides along in the save and defaults to Normal.
+    let old: Progress = serde_json::from_str(r#"{"solved":[],"deaths":0,"total_deaths":0}"#)
+        .expect("old save must load");
+    assert_eq!(old.difficulty, Difficulty::Normal);
+}
+
+#[test]
 fn rebuild_returns_echoes_from_a_stale_stain() {
     let mut p = Progress {
         echoes: 10,
@@ -259,6 +280,7 @@ fn chapters_unseal_at_the_threshold() {
         starter_code: String::new(),
         trial: "TRIAL:".into(),
         hints: vec![],
+        toolbox: vec![],
         solution: String::new(),
     };
     let cur = Curriculum {

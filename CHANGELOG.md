@@ -3,6 +3,27 @@
 All notable changes to Borrowborne are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow SemVer.
 
+## [Unreleased]
+
+### Added
+
+- **Toolbox nudges**: every puzzle now shows a free, always-visible
+  list of the syntax, methods, and types it may call for (e.g.
+  `.unwrap_or()`, `match`, `Box<dyn Trait>`) — a step short of a hint,
+  naming the tools without saying how to use them. It costs nothing
+  and never competes with the paid lantern hints. Authored for all 38
+  puzzles; a new optional `toolbox` field in the `.ron` schema.
+- **Merciful covenant (Easy difficulty)**: chosen on the world map,
+  it makes the lantern free — hints cost no echoes — for players who
+  find the borrow checker punishment enough. Persisted with progress;
+  Nightfarer (Normal) keeps the echo economy.
+- **BGM melody**: each region's drone now carries a sparse plucked
+  melody — a minor-pentatonic motif riding above the root, rotated per
+  region so no two regions play the same tune. The pluck envelopes
+  decay to silence before the 12 s loop point, so the seam stays
+  clickless (unit-tested, along with each region being distinct). This
+  answers "the music is too monotonous": the drone was a flat pad.
+
 ## [0.6.0] - 2026-07-18
 
 ### Added

@@ -31,6 +31,10 @@ assert!(
     !open_gate(String::from("bent-key")),
     "TRIAL: the gate opened for a counterfeit key"
 );"#,
+            toolbox: [
+                "&str",
+                "& (shared borrow)",
+            ],
             solution: r#"fn inspect(key: &str) -> bool {
     key == "rusty-key"
 }
@@ -62,6 +66,11 @@ fn measure_twice(scroll: String) -> (usize, usize) {
     (7, 7),
     "TRIAL: the scribes disagree about the scroll"
 );"#,
+            toolbox: [
+                "& (shared borrow)",
+                "&String",
+                ".len()",
+            ],
             solution: r#"fn measure(scroll: &String) -> usize {
     scroll.len()
 }
@@ -94,6 +103,11 @@ fn forge() -> String {
     "iron sword +1",
     "TRIAL: the blade left the anvil dull"
 );"#,
+            toolbox: [
+                "&mut (exclusive borrow)",
+                "let mut",
+                "String::push_str",
+            ],
             solution: r#"fn sharpen(blade: &mut String) {
     blade.push_str(" +1");
 }
@@ -133,6 +147,10 @@ fn twin_offering(key: String) -> (usize, usize) {
                 "`.clone()` forges an owned twin — spend it on the FIRST offering, keep the original for the second.",
                 "`let west = consume(key.clone());` then `let east = consume(key);`",
             ],
+            toolbox: [
+                ".clone()",
+                "ownership / move",
+            ],
             solution: r#"fn consume(key: String) -> usize {
     key.len()
 }
@@ -169,6 +187,11 @@ fn archive() -> usize {
                 "A `String` owns its text; a `&str` merely looks at text. Functions that only read usually ask for `&str`.",
                 "You cannot hand over the vessel — lend a view. One character changes everything.",
                 "`read_inscription(&scroll)` — a `&String` softens into `&str` on its own (deref coercion).",
+            ],
+            toolbox: [
+                "&str vs String",
+                "& (borrow)",
+                "deref coercion",
             ],
             solution: r#"fn read_inscription(note: &str) -> usize {
     note.len()

@@ -37,6 +37,11 @@ struct Knight;
                 "Write `impl Oath for Knight` with a `swear` whose signature matches the trait's exactly.",
                 "impl Oath for Knight { fn swear(&self) -> String { String::from(\"by steel and dawn\") } }",
             ],
+            toolbox: [
+                "trait",
+                "impl Trait for Type",
+                "fn (&self)",
+            ],
             solution: r#"trait Oath {
     fn swear(&self) -> String;
 }
@@ -78,6 +83,10 @@ assert_eq!(
                 "A default method is only a fallback — an impl block may provide its own body instead.",
                 "Give the Berserker's `impl Stance` a `stance` method of its own; the Squire's stays empty.",
                 "impl Stance for Berserker { fn stance(&self) -> String { String::from(\"frenzy\") } }",
+            ],
+            toolbox: [
+                "default method",
+                "override in impl",
             ],
             solution: r#"trait Stance {
     fn stance(&self) -> String {
@@ -140,6 +149,10 @@ assert_eq!(
                 "Write the bound in the angle brackets: `<T: Bellow, U: Bellow>`.",
                 "fn louder_of<T: Bellow, U: Bellow>(a: &T, b: &U) -> u32",
             ],
+            toolbox: [
+                "generics <T>",
+                "trait bound: T: Bellow",
+            ],
             solution: r#"trait Bellow {
     fn bellow(&self) -> u32;
 }
@@ -193,6 +206,11 @@ assert!(
                 "Put a derive attribute on the struct naming both traits.",
                 "#[derive(Clone, PartialEq)] above `struct Sigil`.",
             ],
+            toolbox: [
+                "#[derive(...)]",
+                "Clone",
+                "PartialEq",
+            ],
             solution: r#"#[derive(Clone, PartialEq)]
 struct Sigil {
     rank: u32,
@@ -245,6 +263,11 @@ assert_eq!(brigade[1].title(), "mage", "TRIAL: the rearguard is out of place");"
                 "A trait is not a type. 'Some value that implements the trait' is a trait object: `dyn Fighter`.",
                 "Trait objects are unsized, so they live behind a pointer — here, the Box you already have.",
                 "fn muster() -> Vec<Box<dyn Fighter>>",
+            ],
+            toolbox: [
+                "dyn Trait",
+                "Box<dyn Trait>",
+                "trait object",
             ],
             solution: r#"trait Fighter {
     fn title(&self) -> String;
@@ -316,6 +339,10 @@ assert_eq!(
                 "Two jobs: an `impl Class for Ashen`, and bounds on the duel's generics.",
                 "The impl mirrors the Guildmaster's, with \"ashen one\" and 90; the duel needs `<T: Class, U: Class>`.",
                 "impl Class for Ashen { … } and fn duel<T: Class, U: Class>(a: &T, b: &U) -> String",
+            ],
+            toolbox: [
+                "impl Trait for Type",
+                "bound: <T: Class>",
             ],
             solution: r#"trait Class {
     fn class_name(&self) -> String;

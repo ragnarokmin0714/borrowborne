@@ -20,6 +20,7 @@ fn kept_key_puzzle() -> Puzzle {
 );"#
         .into(),
         hints: vec![],
+        toolbox: vec![],
         solution: String::new(),
     }
 }

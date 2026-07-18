@@ -162,7 +162,11 @@ const BGM_SAMPLE_RATE: u32 = 22_050;
 const THEME_ROOTS: [f32; 7] = [55.0, 49.5, 41.5, 62.0, 37.0, 46.5, 58.5];
 
 fn themes() -> Vec<StaticSoundData> {
-    THEME_ROOTS.iter().map(|&root| render_drone(root)).collect()
+    THEME_ROOTS
+        .iter()
+        .enumerate()
+        .map(|(theme, &root)| render_theme(root, theme))
+        .collect()
 }
 
 /// Layered drone breathing on slow LFOs whose rates are integer
@@ -181,13 +185,69 @@ fn drone_wave(root: f32, t: f32) -> f32 {
         + p(6.0) * 0.08 * lfo(5.0, 5.1)
 }
 
-fn render_drone(root: f32) -> StaticSoundData {
+// ── Melody: a sparse pluck line so the drone is not a flat pad ───────
+//
+// Minor-pentatonic ratios over the root (root, ♭3, 4, 5, ♭7) — a dark
+// scale that never sours against the drone. A fixed motif of plucked
+// bells plays across the 12 s loop, riding ×6 above the root so it
+// lands in an audible register. Each region rotates the scale degrees
+// (`+ theme`), so no two regions play the same tune. Seamlessness is
+// kept by the pluck envelope: every note has decayed to silence well
+// before the loop point, so the repeat has nothing to click on.
+
+/// Minor-pentatonic ratios over the root.
+const PENTA: [f32; 5] = [1.0, 1.2, 1.333_333_3, 1.5, 1.8];
+
+/// (onset seconds, scale degree) for the motif; last note leaves a
+/// tail that decays to silence before the 12 s seam.
+const MOTIF: [(f32, usize); 7] = [
+    (0.0, 0),
+    (1.8, 2),
+    (3.4, 4),
+    (5.0, 3),
+    (6.8, 1),
+    (8.6, 4),
+    (9.8, 2),
+];
+
+/// Octave lift for the melody so it clears the 37–62 Hz roots.
+const MELODY_MULT: f32 = 6.0;
+
+fn melody_wave(root: f32, theme: usize, t: f32) -> f32 {
+    let mut s = 0.0;
+    for (onset, degree) in MOTIF {
+        if t < onset {
+            continue;
+        }
+        let age = t - onset;
+        // Pluck: near-instant attack, exponential decay. Silent again
+        // long before the seam, so the loop is clickless whatever the
+        // note frequency.
+        let env = (age / 0.015).min(1.0) * (-age * 2.2).exp();
+        if env < 1e-4 {
+            continue;
+        }
+        let freq = root * MELODY_MULT * PENTA[(degree + theme) % PENTA.len()];
+        // A soft bell: fundamental plus a quiet octave.
+        let tone = (TAU * freq * t).sin() * 0.7 + (TAU * freq * 2.0 * t).sin() * 0.2;
+        s += tone * env * 0.18;
+    }
+    s
+}
+
+/// The full BGM sample at time `t`: drone bed plus the region's melody.
+/// Pure and deterministic, so the loop seam is unit-testable.
+fn bgm_wave(root: f32, theme: usize, t: f32) -> f32 {
+    drone_wave(root, t) + melody_wave(root, theme, t)
+}
+
+fn render_theme(root: f32, theme: usize) -> StaticSoundData {
     let n = (BGM_SAMPLE_RATE as f32 * BGM_LOOP_SECS) as usize;
     let frames: Arc<[Frame]> = (0..n)
         .map(|i| {
             let t = i as f32 / BGM_SAMPLE_RATE as f32;
             // Driven for warmth and presence; still under the SFX.
-            Frame::from_mono((drone_wave(root, t) * 1.3).tanh() * 0.6)
+            Frame::from_mono((bgm_wave(root, theme, t) * 1.3).tanh() * 0.6)
         })
         .collect();
     StaticSoundData {
@@ -256,4 +316,50 @@ fn death_wave(t: f32, _dur: f32) -> f32 {
 fn timeout_wave(t: f32, _dur: f32) -> f32 {
     let wobble = 440.0 + 12.0 * (TAU * 5.0 * t).sin();
     (TAU * wobble * t).sin() * decay(t, 6.0) * 0.6
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The loop must not click: every theme's wave at the seam (t = loop
+    /// length, which wraps to t = 0) must nearly equal its value at 0.
+    /// The drone is exact by construction (integer-cycle partials); the
+    /// melody's pluck envelopes have decayed to near-silence by then.
+    #[test]
+    fn bgm_loops_without_a_click() {
+        for (theme, &root) in THEME_ROOTS.iter().enumerate() {
+            let head = bgm_wave(root, theme, 0.0);
+            let seam = bgm_wave(root, theme, BGM_LOOP_SECS);
+            let jump = (head - seam).abs();
+            assert!(jump < 0.02, "theme {theme}: seam jump {jump} too large");
+        }
+    }
+
+    /// Every region must play a distinct tune: rotating the pentatonic
+    /// by the theme index means no two share a melody line.
+    #[test]
+    fn regions_do_not_share_a_melody() {
+        // Sample the melody of each theme at a fixed root, off the
+        // harmonic grid (an odd root and step, so samples never all
+        // land on zero crossings). Two themes differ when their sampled
+        // waves differ substantially, not by a coincidental hair.
+        let sample = |theme: usize| -> Vec<f32> {
+            (0..60)
+                .map(|k| melody_wave(51.7, theme, k as f32 * 0.19 + 0.05))
+                .collect()
+        };
+        for a in 0..THEME_ROOTS.len() {
+            for b in (a + 1)..THEME_ROOTS.len() {
+                // Rotations repeat every PENTA.len(); only themes whose
+                // rotations actually differ are required to sound apart.
+                if a % PENTA.len() == b % PENTA.len() {
+                    continue;
+                }
+                let (sa, sb) = (sample(a), sample(b));
+                let diff: f32 = sa.iter().zip(&sb).map(|(x, y)| (x - y).abs()).sum();
+                assert!(diff > 1.0, "themes {a} and {b} share a tune (diff {diff})");
+            }
+        }
+    }
 }

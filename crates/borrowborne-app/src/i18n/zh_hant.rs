@@ -28,6 +28,11 @@ pub static ZH: Tr = Tr {
 
     hint_whisper: "🕯 向提燈求問",
     hint_exhausted: "提燈已無話可說。",
+    toolbox_label: "🔧 可能會用到的工具",
+    difficulty_label: "誓約",
+    difficulty_normal: "夜行者",
+    difficulty_easy: "慈悲",
+    difficulty_hint: "慈悲：提燈免費——提示不花費任何血之迴響。",
 
     echoes: "迴響",
     stain_here: "你失落的迴響就在此處。通過試煉，將它們取回。",

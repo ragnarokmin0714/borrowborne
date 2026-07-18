@@ -28,6 +28,11 @@ pub static JA: Tr = Tr {
 
     hint_whisper: "🕯 ランタンに問う",
     hint_exhausted: "ランタンはもう何も語らない。",
+    toolbox_label: "🔧 使うかもしれない道具",
+    difficulty_label: "誓約",
+    difficulty_normal: "夜渡り",
+    difficulty_easy: "慈悲",
+    difficulty_hint: "慈悲：ランタンは無料——ヒントは血の残響を消費しない。",
 
     echoes: "残響",
     stain_here: "失った残響はここに眠る。試練を越えて取り戻せ。",

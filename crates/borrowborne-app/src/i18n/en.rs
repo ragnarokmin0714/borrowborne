@@ -28,6 +28,11 @@ pub static EN: Tr = Tr {
 
     hint_whisper: "🕯 Ask the lantern",
     hint_exhausted: "The lantern has no more to say.",
+    toolbox_label: "🔧 Tools you may need",
+    difficulty_label: "Covenant",
+    difficulty_normal: "Nightfarer",
+    difficulty_easy: "Merciful",
+    difficulty_hint: "Merciful: the lantern is free — hints cost no echoes.",
 
     echoes: "echoes",
     stain_here: "Your lost echoes lie here. Pass the trial to reclaim them.",

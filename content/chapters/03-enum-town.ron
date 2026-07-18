@@ -35,6 +35,10 @@ fn eldest() -> u32 {
                 "The `Villager` needs its `age` — the compiler even names the missing field.",
                 "Add `age: 77,` beside the name.",
             ],
+            toolbox: [
+                "struct literal",
+                "every field required",
+            ],
             solution: r#"struct Villager {
     name: String,
     age: u32,
@@ -71,6 +75,11 @@ fn toll() -> u32 {
                 "Methods live in an `impl` block: `impl Bell { … }`.",
                 "The method takes `&self` — it reads the pitch, it does not consume the bell.",
                 "`impl Bell { fn ring(&self) -> u32 { self.pitch * 2 } }`",
+            ],
+            toolbox: [
+                "impl block",
+                "fn method(&self)",
+                "self.field",
             ],
             solution: r#"struct Bell {
     pitch: u32,
@@ -113,6 +122,11 @@ assert_eq!(howl(Mood::Feral), 3, "TRIAL: the feral hound went unheard");"#,
                 "Add an arm for `Mood::Feral`.",
                 "`Mood::Feral => 3,`",
             ],
+            toolbox: [
+                "match",
+                "enum variants",
+                "exhaustive arms",
+            ],
             solution: r#"enum Mood {
     Calm,
     Feral,
@@ -151,6 +165,11 @@ assert_eq!(value(Coin::Silver(3)), 30, "TRIAL: the changer shortchanged silver")
                 "The match arms bind the carried number — the bug is in what one arm does with it.",
                 "One silver is ten coppers.",
                 "`Coin::Silver(n) => n * 10,`",
+            ],
+            toolbox: [
+                "match with bindings",
+                "Variant(n) =>",
+                "* multiply",
             ],
             solution: r#"enum Coin {
     Copper(u32),
@@ -193,6 +212,11 @@ assert_eq!(gate_fee(Visitor::Beast), 99, "TRIAL: a beast strolled in for five co
                 "The wildcard `_` matches everything left over — including things you meant to treat differently.",
                 "Give the beast its own arm; keep or drop the wildcard as you see fit.",
                 "`Visitor::Beast => 99, Visitor::Merchant => 5,` — naming every arm lets the compiler guard future visitors too.",
+            ],
+            toolbox: [
+                "match arms",
+                "_ wildcard",
+                "name each variant",
             ],
             solution: r#"enum Visitor {
     Hunter,
@@ -251,6 +275,11 @@ assert_eq!(
                 "Two steps: answer the `Haggler` arm, then make the arithmetic safe when the discount exceeds the price.",
                 "`u32` panics on underflow in debug builds — `saturating_sub` never goes below zero, and `.max(1)` enforces the keeper's floor.",
                 "`Customer::Haggler(d) => stall.price.saturating_sub(d).max(1),`",
+            ],
+            toolbox: [
+                "match",
+                "u32::saturating_sub",
+                ".max()",
             ],
             solution: r#"struct Stall {
     price: u32,

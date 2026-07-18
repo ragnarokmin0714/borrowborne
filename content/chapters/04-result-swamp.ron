@@ -29,6 +29,12 @@ assert_eq!(first_light(&[]), 0, "TRIAL: the empty marsh must count as zero");"#,
                 "You want 'the value, or 0 when there is none' — Option has a method that says exactly that.",
                 "`lights.first().copied().unwrap_or(0)`",
             ],
+            toolbox: [
+                "Option",
+                "slice::first",
+                ".copied()",
+                ".unwrap_or()",
+            ],
             solution: r#"fn first_light(lights: &[u32]) -> u32 {
     lights.first().copied().unwrap_or(0)
 }
@@ -53,6 +59,10 @@ assert_eq!(lantern_oil(None), 1, "TRIAL: empty hands earned no hope");"#,
                 "`Option<u32>` is an enum with two variants: `Some(u32)` and `None`.",
                 "The match is missing its `None` arm.",
                 "`None => 1,`",
+            ],
+            toolbox: [
+                "match on Option",
+                "Some(x) / None",
             ],
             solution: r#"fn lantern_oil(found: Option<u32>) -> u32 {
     match found {
@@ -87,6 +97,11 @@ assert_eq!(attempt(150), "turned back", "TRIAL: the heavy hunter drowned");"#,
                 "`Result` is `Ok(value)` or `Err(problem)` — an enum, so match answers both.",
                 "Match the keeper's answer: pass `Ok` through, translate any `Err` into \"turned back\".",
                 "`match cross_bridge(weight) { Ok(s) => s, Err(_) => String::from(\"turned back\") }`",
+            ],
+            toolbox: [
+                "Result",
+                "match Ok / Err",
+                "Err(_)",
             ],
             solution: r#"fn cross_bridge(weight: u32) -> Result<String, String> {
     if weight <= 100 {
@@ -123,6 +138,11 @@ assert!(read_rune("mud").is_err(), "TRIAL: mud was mistaken for a rune");"#,
                 "The function already returns the right Result type, so `?` may be used inside it.",
                 "`let n = carving.parse::<u32>()?;`",
             ],
+            toolbox: [
+                "? operator",
+                "str::parse",
+                "Result",
+            ],
             solution: r#"fn read_rune(carving: &str) -> Result<u32, std::num::ParseIntError> {
     let n = carving.parse::<u32>()?;
     Ok(n + 1)
@@ -157,6 +177,11 @@ assert_eq!(
                 "`?` on an Option takes the `Some` value out, or returns `None` immediately.",
                 "The second `words.next()` is missing its `?`.",
                 "`let w = words.next()?;`",
+            ],
+            toolbox: [
+                "? on Option",
+                "Iterator::next",
+                "str::split",
             ],
             solution: r#"fn password_length(greeting: &str) -> Option<usize> {
     let mut words = greeting.split(' ');
@@ -194,6 +219,12 @@ assert_eq!(
                 "Two answers to give: translate the parse failure into your own error, and check the limit.",
                 "`.map_err(|_| String::from(\"illegible\"))?` converts the parse error, then an `if` guards the limit.",
                 "`let dose: u32 = label.trim().parse().map_err(|_| String::from(\"illegible\"))?; if dose > limit { return Err(String::from(\"lethal\")); } Ok(dose * 3)`",
+            ],
+            toolbox: [
+                "Result",
+                ".map_err()",
+                "? operator",
+                "return Err(...)",
             ],
             solution: r#"fn brew(label: &str, limit: u32) -> Result<u32, String> {
     let dose: u32 = label

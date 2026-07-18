@@ -88,7 +88,9 @@ who want the true roguelike covenant.
 - [ ] Lifetime Shrine: lifetime annotation puzzles.
 - [ ] Concurrency Keep: threads / channels / `Arc<Mutex>` final maze.
 - [ ] Difficulty tiers, including **hardcore**: no save, one run,
-      LeetCode-style algorithm dungeon lives here.
+      LeetCode-style algorithm dungeon lives here. (An **Easy /
+      Merciful** tier — free hints — shipped early in 0.6; hardcore is
+      the other end still to come.)
 
 ## Later
 

@@ -86,6 +86,15 @@ pub struct Tr {
     // Hints.
     pub hint_whisper: &'static str,
     pub hint_exhausted: &'static str,
+    /// Free, always-shown list of syntax/methods/types a puzzle may
+    /// need — a nudge short of a hint, so it costs nothing.
+    pub toolbox_label: &'static str,
+
+    // Difficulty (chosen on the map).
+    pub difficulty_label: &'static str,
+    pub difficulty_normal: &'static str,
+    pub difficulty_easy: &'static str,
+    pub difficulty_hint: &'static str,
 
     // Blood echoes.
     pub echoes: &'static str,

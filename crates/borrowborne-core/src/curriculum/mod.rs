@@ -67,6 +67,12 @@ pub struct Puzzle {
     /// near-solution. At most three; optional in content files.
     #[serde(default)]
     pub hints: Vec<String>,
+    /// Free, always-shown nudges: the syntax, methods, or types this
+    /// puzzle may call for (e.g. `.unwrap_or()`, `match`, `Vec<T>`).
+    /// A step short of a hint — it names tools without saying how to
+    /// use them — so it costs nothing and is not gated. Optional.
+    #[serde(default)]
+    pub toolbox: Vec<String>,
     /// Canonical solution. Never shown to the player — it exists so the
     /// content gate test can prove every puzzle is solvable (and every
     /// starter is not already a solution).
