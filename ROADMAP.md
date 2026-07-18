@@ -89,7 +89,11 @@ who want the true roguelike covenant.
       lifetime, a struct that borrows, the lifetime on an impl block,
       the dangling-borrow wall no `'a` can save, and a keeper-of-graves
       boss tying all three together.
-- [ ] Concurrency Keep: threads / channels / `Arc<Mutex>` final maze.
+- [x] Concurrency Keep: threads / channels / `Arc<Mutex>` final maze
+      (6) — spawn/join, `move` into a thread, an mpsc channel, `Arc`
+      for shared reads, `Arc<Mutex>` for shared writes, and a
+      five-shift boss. Every trial joins before it reads, so the
+      puzzles are deterministic despite being threaded.
 - [ ] Difficulty tiers, including **hardcore**: no save, one run,
       LeetCode-style algorithm dungeon lives here. (An **Easy /
       Merciful** tier — free hints — shipped early in 0.6; hardcore is

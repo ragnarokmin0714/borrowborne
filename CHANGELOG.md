@@ -7,6 +7,15 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ### Added
 
+- **Concurrency Keep** (6 puzzles): the final maze. `thread::spawn`
+  and `join`, the `move` closure, an `mpsc` channel, `Arc` for a
+  shared read, `Arc<Mutex>` for a shared write, and a five-shift boss
+  totalling one guarded ledger. Every trial joins all threads before
+  it reads, so the puzzles are deterministic despite being threaded —
+  no timing races, well under the 5 s budget. (cc-05/cc-06's canonical
+  solutions bind the lock read to a local so the `MutexGuard` drops
+  before the `Arc`, avoiding E0597 — a real Rust gotcha the content
+  gate caught.) 49 puzzles, 8 regions total, with its own BGM drone.
 - **Lifetime Shrine** (5 puzzles): the first endgame region. The
   function lifetime (`longest`-style `<'a>`), a struct that borrows,
   the lifetime carried onto an `impl` block, the dangling-borrow wall

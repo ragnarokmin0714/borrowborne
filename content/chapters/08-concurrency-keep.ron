@@ -1,0 +1,288 @@
+// Concurrency Keep — threads, channels, Arc<Mutex>.
+//
+// The final maze. Every trial is DETERMINISTIC on purpose: each spawned
+// thread is joined before anything is read, so there is no race in the
+// assertion — only the compile-time race the borrow checker forbids.
+// The work is trivial (a few increments), far under the 5 s budget.
+//
+// Trial assertions MUST carry a "TRIAL: …" message.
+(
+    id: "concurrency-keep",
+    name: "Concurrency Keep",
+    tagline: "Many hands in the dark. The keep counts only what returns.",
+    puzzles: [
+        (
+            id: "cc-01-the-second-hunter",
+            title: "The Second Hunter",
+            scene: "You send a second hunter into the dark to count kills while you count your own. `thread::spawn` sends them off — but what it hands back is not the tally, it is a JOIN HANDLE: a promise to collect the tally later.\n\nA promise is not a number; you cannot add it to yours. Join the hunter first, then add what they bring back.",
+            concepts: [Threads],
+            starter_code: r#"use std::thread;
+
+fn hunt() -> i32 {
+    let handle = thread::spawn(|| 21);
+    // `handle` is a JoinHandle, not the 21 inside it. Adding a promise
+    // to a number is nonsense — collect the promise with `.join()`.
+    handle + 21
+}
+"#,
+            trial: r#"assert_eq!(hunt(), 42, "TRIAL: the two hunters miscounted the night");"#,
+            hints: [
+                "`thread::spawn` returns a `JoinHandle<T>`, not a `T`. The value appears only when the thread is joined.",
+                "`.join()` waits for the thread and returns a `Result` holding its value; `.unwrap()` takes the value out.",
+                "handle.join().unwrap() + 21",
+            ],
+            toolbox: [
+                "thread::spawn",
+                "JoinHandle::join",
+                ".unwrap()",
+            ],
+            solution: r#"use std::thread;
+
+fn hunt() -> i32 {
+    let handle = thread::spawn(|| 21);
+    handle.join().unwrap() + 21
+}
+"#,
+        ),
+        (
+            id: "cc-02-the-carried-torch",
+            title: "The Carried Torch",
+            scene: "A hunter carries a lit torch into the keep. The thread you spawn wants to read the torch's name — but it only BORROWS it, and a borrowed thing must not outlive its owner. The spawned thread might run long after this function returns, so the compiler refuses the loan.\n\nLet the thread OWN what it carries: one keyword moves the torch across the threshold for good.",
+            concepts: [Threads],
+            starter_code: r#"use std::thread;
+
+fn carry() -> String {
+    let torch = String::from("lit torch");
+    // The closure only borrows `torch`, but the thread may outlive this
+    // function. It must take ownership — carry the torch across.
+    let handle = thread::spawn(|| format!("{torch} in the keep"));
+    handle.join().unwrap()
+}
+"#,
+            trial: r#"assert_eq!(carry(), "lit torch in the keep", "TRIAL: the torch went out at the threshold");"#,
+            hints: [
+                "A thread closure that outlives the current function may not borrow its locals.",
+                "The `move` keyword makes the closure take ownership of everything it captures.",
+                "thread::spawn(move || format!(\"{torch} in the keep\"))",
+            ],
+            toolbox: [
+                "move closure",
+                "thread::spawn(move || ...)",
+            ],
+            solution: r#"use std::thread;
+
+fn carry() -> String {
+    let torch = String::from("lit torch");
+    let handle = thread::spawn(move || format!("{torch} in the keep"));
+    handle.join().unwrap()
+}
+"#,
+        ),
+        (
+            id: "cc-03-the-message-bell",
+            title: "The Message Bell",
+            scene: "A watcher on the wall rings a bell for each beast sighted — three rings tonight — and each ring travels down a rope to your desk. That rope is a CHANNEL: the watcher sends, you receive. The rope carries every ring until the watcher lets go of their end.\n\nThe watcher already rings three times. Your desk stays silent — collect the rings and total them.",
+            concepts: [Channels],
+            starter_code: r#"use std::sync::mpsc;
+use std::thread;
+
+fn ring() -> i32 {
+    let (tx, rx) = mpsc::channel();
+    thread::spawn(move || {
+        for beast in 1..=3 {
+            tx.send(beast).unwrap();
+        }
+    });
+    // The rings arrive on `rx`. Receiving end yields each value until
+    // the sender is gone — gather them and sum. Right now: silence.
+    let total = 0;
+    total
+}
+"#,
+            trial: r#"assert_eq!(ring(), 6, "TRIAL: the bell's warning was miscounted");"#,
+            hints: [
+                "The receiver `rx` can be iterated with `for`: it yields each sent value, then ends when every sender is dropped.",
+                "Sum what arrives: loop over `rx`, adding each ring to the total.",
+                "let mut total = 0; for beast in rx { total += beast; } total",
+            ],
+            toolbox: [
+                "mpsc::channel",
+                "Sender::send",
+                "for x in rx",
+            ],
+            solution: r#"use std::sync::mpsc;
+use std::thread;
+
+fn ring() -> i32 {
+    let (tx, rx) = mpsc::channel();
+    thread::spawn(move || {
+        for beast in 1..=3 {
+            tx.send(beast).unwrap();
+        }
+    });
+    let mut total = 0;
+    for beast in rx {
+        total += beast;
+    }
+    total
+}
+"#,
+        ),
+        (
+            id: "cc-04-the-shared-map",
+            title: "The Shared Map",
+            scene: "Two scouts set out at once, and both must read the SAME map of the land. But a value can be moved into only one thread — hand the map to the first scout and the second finds empty hands.\n\nWhat many threads must share, they share through an `Arc`: an owner that can be cloned cheaply, every clone pointing at the one true map. Give each scout their own handle.",
+            concepts: [SharedState],
+            starter_code: r#"use std::thread;
+
+fn survey() -> usize {
+    let land = vec![10, 20, 30, 40];
+    // `land` is moved into the first scout — nothing remains for the
+    // second. A shared read across threads needs a shared owner: Arc,
+    // cloned once per thread.
+    let north = thread::spawn(move || land.len());
+    let south = thread::spawn(move || land.len());
+    north.join().unwrap() + south.join().unwrap()
+}
+"#,
+            trial: r#"assert_eq!(survey(), 8, "TRIAL: a scout came back with an empty map");"#,
+            hints: [
+                "`Arc<T>` is a thread-safe shared owner: cloning it is cheap and every clone points at the same value.",
+                "Wrap the map in `Arc::new(...)`, then `Arc::clone(&map)` once for each thread before moving the clone in.",
+                "let land = Arc::new(vec![...]); let n = Arc::clone(&land); … move || n.len()",
+            ],
+            toolbox: [
+                "Arc::new",
+                "Arc::clone",
+                "shared read across threads",
+            ],
+            solution: r#"use std::sync::Arc;
+use std::thread;
+
+fn survey() -> usize {
+    let land = Arc::new(vec![10, 20, 30, 40]);
+    let north_map = Arc::clone(&land);
+    let south_map = Arc::clone(&land);
+    let north = thread::spawn(move || north_map.len());
+    let south = thread::spawn(move || south_map.len());
+    north.join().unwrap() + south.join().unwrap()
+}
+"#,
+        ),
+        (
+            id: "cc-05-the-counting-stones",
+            title: "The Counting Stones",
+            scene: "Four hands each place one stone on the same cairn. They share the cairn through an `Arc` — but sharing grants only the right to LOOK, and a stone must be ADDED. Shared means read-only; no hand may mutate through a bare `Arc`.\n\nA `Mutex` is the answer: it hands out the cairn to one hand at a time, and only the hand holding the lock may change it. Wrap the count so each hand can add its stone in turn.",
+            concepts: [SharedState],
+            starter_code: r#"use std::sync::Arc;
+use std::thread;
+
+fn tally() -> i32 {
+    let count = Arc::new(0);
+    let mut hands = vec![];
+    for _ in 0..4 {
+        let c = Arc::clone(&count);
+        hands.push(thread::spawn(move || {
+            // Cannot mutate through a shared Arc<i32> — shared is
+            // read-only. A Mutex grants one writer at a time.
+            *c += 1;
+        }));
+    }
+    for hand in hands {
+        hand.join().unwrap();
+    }
+    *count
+}
+"#,
+            trial: r#"assert_eq!(tally(), 4, "TRIAL: a stone was lost from the cairn");"#,
+            hints: [
+                "To mutate shared data across threads, the value must sit behind a `Mutex`: `Arc<Mutex<i32>>`.",
+                "`.lock()` returns a guard (a `Result`); unwrap it, then deref to read or write: `*c.lock().unwrap() += 1`.",
+                "let count = Arc::new(Mutex::new(0)); … *c.lock().unwrap() += 1; … then read into a local: let total = *count.lock().unwrap(); total",
+            ],
+            toolbox: [
+                "Arc<Mutex<T>>",
+                "Mutex::lock",
+                "*guard += 1",
+            ],
+            solution: r#"use std::sync::{Arc, Mutex};
+use std::thread;
+
+fn tally() -> i32 {
+    let count = Arc::new(Mutex::new(0));
+    let mut hands = vec![];
+    for _ in 0..4 {
+        let c = Arc::clone(&count);
+        hands.push(thread::spawn(move || {
+            *c.lock().unwrap() += 1;
+        }));
+    }
+    for hand in hands {
+        hand.join().unwrap();
+    }
+    // Bind to a local so the lock guard is dropped before `count` is,
+    // not held live to the end of the block (E0597 otherwise).
+    let total = *count.lock().unwrap();
+    total
+}
+"#,
+
+        ),
+        (
+            id: "cc-06-the-keeps-reckoning",
+            title: "The Keep's Reckoning",
+            scene: "The keep's final night: five watch-shifts, each adding its own count to one shared ledger, and the keep demands the grand total — counted without a single lost update.\n\nEverything the keep taught, in one spell: the ledger must be shared (`Arc`), guarded so each shift writes in turn (`Mutex`), and each shift must OWN its handle (`move`) — then every hand joined before the reckoning is read. Shift number `k` adds `k`; five shifts, one true total.",
+            concepts: [Threads, SharedState],
+            starter_code: r#"use std::thread;
+
+fn reckon() -> i32 {
+    // A bare i32 cannot be shared and mutated across threads: each
+    // shift below borrows it mutably, and many hands cannot hold that
+    // at once. Share it (Arc), guard it (Mutex), and `move` each handle.
+    let mut ledger = 0;
+    let mut hands = vec![];
+    for shift in 1..=5 {
+        hands.push(thread::spawn(|| {
+            ledger += shift;
+        }));
+    }
+    for hand in hands {
+        hand.join().unwrap();
+    }
+    ledger
+}
+"#,
+            trial: r#"assert_eq!(reckon(), 15, "TRIAL: the keep's reckoning lost a shift");"#,
+            hints: [
+                "The shared, mutable ledger needs `Arc<Mutex<i32>>`; each thread needs its own `Arc::clone`, moved in.",
+                "Inside each thread: `*l.lock().unwrap() += shift;`. Join every handle, then read into a local: `let total = *ledger.lock().unwrap(); total`.",
+                "let ledger = Arc::new(Mutex::new(0)); for shift in 1..=5 { let l = Arc::clone(&ledger); hands.push(thread::spawn(move || { *l.lock().unwrap() += shift; })); }",
+            ],
+            toolbox: [
+                "Arc<Mutex<T>>",
+                "move + Arc::clone",
+                "lock() then += ; join all",
+            ],
+            solution: r#"use std::sync::{Arc, Mutex};
+use std::thread;
+
+fn reckon() -> i32 {
+    let ledger = Arc::new(Mutex::new(0));
+    let mut hands = vec![];
+    for shift in 1..=5 {
+        let l = Arc::clone(&ledger);
+        hands.push(thread::spawn(move || {
+            *l.lock().unwrap() += shift;
+        }));
+    }
+    for hand in hands {
+        hand.join().unwrap();
+    }
+    // Local binding drops the lock guard before `ledger` (E0597).
+    let total = *ledger.lock().unwrap();
+    total
+}
+"#,
+        ),
+    ],
+)
