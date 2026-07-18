@@ -32,9 +32,11 @@ pub static EN: Tr = Tr {
     difficulty_label: "Covenant",
     difficulty_normal: "Nightfarer",
     difficulty_easy: "Merciful",
+    difficulty_hardcore: "Unforgiven",
     difficulty_hint: "Merciful: the lantern is free — hints cost no echoes.",
     difficulty_effect_normal: "Nightfarer — the standard vigil: hints cost echoes (5 / 10 / 20).",
     difficulty_effect_easy: "Merciful — the lantern is free and fully lit: every hint shown, no echoes spent. For those new to Rust.",
+    difficulty_effect_hardcore: "Unforgiven — nothing is saved to disk, and the run's end wipes all progress. The true roguelike covenant.",
 
     echoes: "echoes",
     stain_here: "Your lost echoes lie here. Pass the trial to reclaim them.",

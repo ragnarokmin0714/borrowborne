@@ -5,6 +5,16 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Unforgiven covenant (hardcore)**: the third difficulty, the true
+  roguelike vow — progress is never written to disk, and the run's end
+  (seven deaths) wipes everything: solved gates, echoes, grades, all of
+  it. Every launch is a fresh gauntlet; a Normal/Easy save on disk is
+  left untouched underneath, so switching back restores it. Difficulty
+  is now a persisted *setting* rather than part of progress, which is
+  what lets the no-save covenant stay clean.
+
 ## [0.7.0] - 2026-07-18
 
 ### Changed (playability feedback)

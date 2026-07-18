@@ -32,9 +32,11 @@ pub static ZH: Tr = Tr {
     difficulty_label: "誓約",
     difficulty_normal: "夜行者",
     difficulty_easy: "慈悲",
+    difficulty_hardcore: "不赦者",
     difficulty_hint: "慈悲：提燈免費——提示不花費任何血之迴響。",
     difficulty_effect_normal: "夜行者——標準的守夜：提示需花費迴響（5 / 10 / 20）。",
     difficulty_effect_easy: "慈悲——提燈免費且全亮：所有提示一次顯示，不花費迴響。適合初學 Rust 者。",
+    difficulty_effect_hardcore: "不赦者——任何進度都不寫入存檔，且一輪結束即抹除全部進度。真正的 roguelike 誓約。",
 
     echoes: "迴響",
     stain_here: "你失落的迴響就在此處。通過試煉，將它們取回。",

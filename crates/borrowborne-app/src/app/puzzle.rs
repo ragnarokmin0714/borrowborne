@@ -82,7 +82,7 @@ fn scene_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
                 // beginner should never be stranded one paid tier short
                 // of the near-solution. Nightfarer reveals one paid
                 // whisper at a time.
-                let merciful = app.progress.difficulty == borrowborne_core::Difficulty::Easy;
+                let merciful = app.difficulty == borrowborne_core::Difficulty::Easy;
                 let revealed = if merciful {
                     hints.len()
                 } else {
@@ -99,7 +99,8 @@ fn scene_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
                 if merciful {
                     // The lantern is already fully lit; nothing to buy.
                 } else if app.hints_shown < hints.len() {
-                    let cost = app.progress.hint_cost(app.hints_shown);
+                    let cost =
+                        borrowborne_core::Progress::hint_cost(app.hints_shown, app.difficulty);
                     let label = format!(
                         "{} — {cost}◉ ({}/{})",
                         tr.hint_whisper,
@@ -110,7 +111,7 @@ fn scene_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
                     if ui
                         .add_enabled(affordable, egui::Button::new(label))
                         .clicked()
-                        && app.progress.buy_hint(app.hints_shown)
+                        && app.progress.buy_hint(app.hints_shown, app.difficulty)
                     {
                         app.hints_shown += 1;
                         app.dirty = true; // the purse changed: flush

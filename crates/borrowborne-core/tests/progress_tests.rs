@@ -155,32 +155,42 @@ fn speed_grades_pay_bonuses_and_keep_the_best() {
 
 #[test]
 fn hints_cost_echoes_and_refuse_the_broke() {
+    use borrowborne_core::Difficulty::Normal;
     let mut p = Progress::default(); // 30 echoes
-    assert!(p.buy_hint(0)); // -5
-    assert!(p.buy_hint(1)); // -10
+    assert!(p.buy_hint(0, Normal)); // -5
+    assert!(p.buy_hint(1, Normal)); // -10
     assert_eq!(p.echoes, STARTING_ECHOES - 5 - 10);
-    assert!(!p.buy_hint(2), "20 > 15: the lantern refuses");
+    assert!(!p.buy_hint(2, Normal), "20 > 15: the lantern refuses");
     assert_eq!(p.echoes, 15, "a refused purchase deducts nothing");
 }
 
 #[test]
 fn easy_mode_makes_hints_free_and_unrefusable() {
-    use borrowborne_core::Difficulty;
+    use borrowborne_core::Difficulty::Easy;
     let mut p = Progress {
         echoes: 0, // broke: Normal would refuse every tier
-        difficulty: Difficulty::Easy,
         ..Progress::default()
     };
     for tier in 0..3 {
-        assert_eq!(p.hint_cost(tier), 0, "Easy: every tier is free");
-        assert!(p.buy_hint(tier), "Easy: the lantern never refuses");
+        assert_eq!(
+            Progress::hint_cost(tier, Easy),
+            0,
+            "Easy: every tier is free"
+        );
+        assert!(p.buy_hint(tier, Easy), "Easy: the lantern never refuses");
     }
     assert_eq!(p.echoes, 0, "free hints deduct nothing");
+}
 
-    // Difficulty rides along in the save and defaults to Normal.
-    let old: Progress = serde_json::from_str(r#"{"solved":[],"deaths":0,"total_deaths":0}"#)
-        .expect("old save must load");
-    assert_eq!(old.difficulty, Difficulty::Normal);
+#[test]
+fn hardcore_covenant_does_not_persist() {
+    use borrowborne_core::Difficulty;
+    assert!(Difficulty::Normal.persists());
+    assert!(Difficulty::Easy.persists());
+    assert!(
+        !Difficulty::Hardcore.persists(),
+        "hardcore is the no-save covenant"
+    );
 }
 
 #[test]

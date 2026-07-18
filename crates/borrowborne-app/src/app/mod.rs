@@ -11,7 +11,7 @@ use eframe::egui;
 
 use borrowborne_core::constants::CHAPTERS_DIR;
 use borrowborne_core::curriculum::{load_dir, parse_chapter};
-use borrowborne_core::{Curriculum, Curse, CurseBook, Progress, Verdict};
+use borrowborne_core::{Curriculum, Curse, CurseBook, Difficulty, Progress, Verdict};
 #[cfg(not(target_arch = "wasm32"))]
 use borrowborne_runner::{RustcLocal, Sandbox};
 
@@ -85,18 +85,29 @@ pub struct BorrowborneApp {
     sfx_vol: f32,
     /// Music volume, 0..=1, persisted.
     bgm_vol: f32,
+    /// The covenant. A setting, persisted on its own — a hardcore
+    /// hunter's choice survives even though their progress does not.
+    difficulty: Difficulty,
 }
 
 impl BorrowborneApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         let mut app = Self::headless();
         if let Some(storage) = cc.storage {
-            if let Some(p) = eframe::get_value(storage, "progress") {
-                app.progress = p;
-                // A corrupt save deserializes to None and we start
-                // fresh; a *stale* one (old content, bad counters)
-                // gets reconciled instead of poisoning the run.
-                app.progress.rebuild(&app.curriculum);
+            if let Some(d) = eframe::get_value(storage, "difficulty") {
+                app.difficulty = d;
+            }
+            // Hardcore never loads a save — every launch is a fresh
+            // gauntlet. A Normal/Easy save on disk is left untouched
+            // underneath, so switching back restores it.
+            if app.difficulty.persists() {
+                if let Some(p) = eframe::get_value(storage, "progress") {
+                    app.progress = p;
+                    // A corrupt save deserializes to None and we start
+                    // fresh; a *stale* one (old content, bad counters)
+                    // gets reconciled instead of poisoning the run.
+                    app.progress.rebuild(&app.curriculum);
+                }
             }
             if let Some(l) = eframe::get_value(storage, "lang") {
                 app.lang = l;
@@ -153,6 +164,7 @@ impl BorrowborneApp {
             muted: false,
             sfx_vol: 1.0,
             bgm_vol: 0.8,
+            difficulty: Difficulty::Normal,
         };
         app.ensure_curse();
         app
@@ -314,6 +326,13 @@ impl BorrowborneApp {
         let purse_before = self.progress.echoes;
         let run_ended = self.progress.record(&id, &concepts, &verdict);
         if run_ended {
+            // Hardcore keeps the true roguelike covenant: the run's end
+            // wipes everything — solved gates, echoes, grades, all of
+            // it. Normal/Easy keep their knowledge (only lives reset).
+            if self.difficulty == Difficulty::Hardcore {
+                self.progress = Progress::default();
+                self.screen = Screen::Map;
+            }
             // The run is over; the next night rises under a new moon.
             self.reroll_curse();
         }
@@ -480,7 +499,12 @@ impl eframe::App for BorrowborneApp {
     }
 
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
-        eframe::set_value(storage, "progress", &self.progress);
+        // Hardcore is the no-save covenant: its progress never touches
+        // disk. Any Normal/Easy save already there stays as it was.
+        if self.difficulty.persists() {
+            eframe::set_value(storage, "progress", &self.progress);
+        }
+        eframe::set_value(storage, "difficulty", &self.difficulty);
         eframe::set_value(storage, "lang", &self.lang);
         eframe::set_value(storage, "muted", &self.muted);
         eframe::set_value(storage, "sfx_vol", &self.sfx_vol);

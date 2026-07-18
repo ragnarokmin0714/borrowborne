@@ -43,24 +43,27 @@ pub fn central(app: &mut BorrowborneApp, ctx: &egui::Context) {
         });
         ui.add_space(4.0);
 
-        // The covenant: Merciful makes the lantern (hints) free, for
-        // players who find the borrow checker punishment enough.
+        // The covenant: Merciful frees the lantern, Nightfarer is the
+        // balance, and the Unforgiven never saves and wipes on death.
+        let name_of = |d: Difficulty| match d {
+            Difficulty::Easy => tr.difficulty_easy,
+            Difficulty::Normal => tr.difficulty_normal,
+            Difficulty::Hardcore => tr.difficulty_hardcore,
+        };
         ui.horizontal(|ui| {
             let indent = (ui.available_width() - 220.0).max(0.0) / 2.0;
             ui.add_space(indent);
             ui.label(RichText::new(tr.difficulty_label).weak());
-            let mut diff = app.progress.difficulty;
+            let mut diff = app.difficulty;
             egui::ComboBox::from_id_source("difficulty")
-                .selected_text(match diff {
-                    Difficulty::Normal => tr.difficulty_normal,
-                    Difficulty::Easy => tr.difficulty_easy,
-                })
+                .selected_text(name_of(diff))
                 .show_ui(ui, |ui| {
-                    ui.selectable_value(&mut diff, Difficulty::Normal, tr.difficulty_normal);
-                    ui.selectable_value(&mut diff, Difficulty::Easy, tr.difficulty_easy);
+                    for d in Difficulty::ALL {
+                        ui.selectable_value(&mut diff, d, name_of(d));
+                    }
                 });
-            if diff != app.progress.difficulty {
-                app.progress.difficulty = diff;
+            if diff != app.difficulty {
+                app.difficulty = diff;
                 app.dirty = true;
             }
         })
@@ -69,12 +72,18 @@ pub fn central(app: &mut BorrowborneApp, ctx: &egui::Context) {
 
         // A standing system note so the difference is never a mystery:
         // spell out what the chosen covenant actually does, in place.
-        let effect = match app.progress.difficulty {
-            Difficulty::Normal => tr.difficulty_effect_normal,
+        let effect = match app.difficulty {
             Difficulty::Easy => tr.difficulty_effect_easy,
+            Difficulty::Normal => tr.difficulty_effect_normal,
+            Difficulty::Hardcore => tr.difficulty_effect_hardcore,
+        };
+        let effect_color = if app.difficulty == Difficulty::Hardcore {
+            BLOOD
+        } else {
+            ui.visuals().weak_text_color()
         };
         ui.vertical_centered(|ui| {
-            ui.label(RichText::new(effect).weak().small().italics());
+            ui.label(RichText::new(effect).small().italics().color(effect_color));
         });
         ui.add_space(8.0);
 

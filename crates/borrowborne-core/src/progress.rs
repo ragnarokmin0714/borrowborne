@@ -22,15 +22,35 @@ pub struct Bloodstain {
     pub amount: u64,
 }
 
-/// How forgiving the run is. Normal is the intended balance; Easy is
-/// for players who find Rust hard enough already — it makes the lantern
-/// free so hints never compete with the echo economy.
+/// The covenant a hunter walks under. This is a *setting*, not
+/// progress — the app persists it separately (see the app's storage),
+/// so a hardcore hunter's choice survives even though their progress
+/// deliberately does not.
+///
+/// - **Easy / Merciful**: hints are free and fully revealed — for
+///   players who find Rust hard enough already.
+/// - **Normal / Nightfarer**: the intended balance; the echo economy
+///   gates hints one paid tier at a time.
+/// - **Hardcore / the Unforgiven**: progress is never written to disk,
+///   and the run's end wipes everything — the true roguelike covenant.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum Difficulty {
     #[default]
     Normal,
-    /// Hints cost no echoes (and so are effectively unlimited).
+    /// Hints cost no echoes and all tiers show at once.
     Easy,
+    /// No disk save; the run's end resets all progress.
+    Hardcore,
+}
+
+impl Difficulty {
+    /// Every covenant, in ascending harshness — for pickers.
+    pub const ALL: [Difficulty; 3] = [Difficulty::Easy, Difficulty::Normal, Difficulty::Hardcore];
+
+    /// Whether progress under this covenant is written to disk.
+    pub fn persists(self) -> bool {
+        self != Difficulty::Hardcore
+    }
 }
 
 /// Persistent player progress. Serialized by the app via eframe's
@@ -73,9 +93,6 @@ pub struct Progress {
     /// Best speed grade per solved puzzle (S beats A beats B).
     #[serde(default)]
     pub grades: HashMap<String, Grade>,
-    /// Chosen difficulty; Easy makes hints free.
-    #[serde(default)]
-    pub difficulty: Difficulty,
 }
 
 fn starting_echoes() -> u64 {
@@ -94,7 +111,6 @@ impl Default for Progress {
             active_curse: None,
             hunter_name: String::new(),
             grades: HashMap::new(),
-            difficulty: Difficulty::Normal,
         }
     }
 }
@@ -198,10 +214,10 @@ impl Progress {
         false
     }
 
-    /// Price of the given hint tier (0-based). Free on Easy — the
-    /// lantern never competes with the echo economy there.
-    pub fn hint_cost(&self, tier: usize) -> u64 {
-        if self.difficulty == Difficulty::Easy {
+    /// Price of the given hint tier (0-based) under a covenant. Free on
+    /// Easy — the lantern never competes with the echo economy there.
+    pub fn hint_cost(tier: usize, difficulty: Difficulty) -> u64 {
+        if difficulty == Difficulty::Easy {
             return 0;
         }
         HINT_COSTS.get(tier).copied().unwrap_or(0)
@@ -209,8 +225,8 @@ impl Progress {
 
     /// Buy the given hint tier. Returns `false` (and deducts nothing)
     /// when the purse cannot cover it. Always succeeds on Easy (cost 0).
-    pub fn buy_hint(&mut self, tier: usize) -> bool {
-        let cost = self.hint_cost(tier);
+    pub fn buy_hint(&mut self, tier: usize, difficulty: Difficulty) -> bool {
+        let cost = Self::hint_cost(tier, difficulty);
         if self.echoes < cost {
             return false;
         }

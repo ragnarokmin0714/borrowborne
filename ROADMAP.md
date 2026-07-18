@@ -94,10 +94,12 @@ who want the true roguelike covenant.
       for shared reads, `Arc<Mutex>` for shared writes, and a
       five-shift boss. Every trial joins before it reads, so the
       puzzles are deterministic despite being threaded.
-- [ ] Difficulty tiers, including **hardcore**: no save, one run,
-      LeetCode-style algorithm dungeon lives here. (An **Easy /
-      Merciful** tier — free hints — shipped early in 0.6; hardcore is
-      the other end still to come.)
+- [x] Difficulty tiers: **Merciful** (free, fully-revealed hints),
+      **Nightfarer** (the balance), and **Unforgiven / hardcore** (no
+      disk save; the run's end wipes all progress). Difficulty is now a
+      persisted *setting*, not part of progress, so the no-save
+      covenant is clean.
+- [ ] LeetCode-style algorithm dungeon (a hardcore-only region).
 
 ## Later
 
