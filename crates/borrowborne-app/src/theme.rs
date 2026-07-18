@@ -46,5 +46,32 @@ pub fn apply(ctx: &egui::Context) {
     let mut style = (*ctx.style()).clone();
     style.spacing.item_spacing = egui::vec2(8.0, 8.0);
     style.spacing.interact_size.y = CONTROL_HEIGHT;
+
+    // egui's defaults run small (Body ~12.5, Monospace ~12), and the
+    // spell editor renders in Monospace — the most-read text in the
+    // game. Bump every text style so nothing strains the eyes, the
+    // code editor most of all.
+    use egui::{FontFamily, FontId, TextStyle};
+    style.text_styles = [
+        (
+            TextStyle::Small,
+            FontId::new(12.0, FontFamily::Proportional),
+        ),
+        (TextStyle::Body, FontId::new(15.0, FontFamily::Proportional)),
+        (
+            TextStyle::Button,
+            FontId::new(15.0, FontFamily::Proportional),
+        ),
+        (
+            TextStyle::Heading,
+            FontId::new(22.0, FontFamily::Proportional),
+        ),
+        (
+            TextStyle::Monospace,
+            FontId::new(16.0, FontFamily::Monospace),
+        ),
+    ]
+    .into();
+
     ctx.set_style(style);
 }

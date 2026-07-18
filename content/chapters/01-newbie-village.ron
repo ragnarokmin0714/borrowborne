@@ -50,7 +50,7 @@
             title: "The Shadow Self",
             scene: "The gate ledger demands your age as a NUMBER. All you carry is a slip of paper reading \"17\" — words, not a number.\n\nThe village keeper whispers: a name may be spoken anew, and the new self eclipses the old — even a self of a different kind. This is not change; it is shadowing.\n\nLet a number step out of the paper's shadow.",
             concepts: [Variables],
-            starter_code: r#"fn true_age() -> u32 {
+            starter_code: r#"fn real_age() -> u32 {
     let age = "17";
     // Words cannot grow older. The ledger needs a number — you may
     // bind the name `age` again, as something new.
@@ -58,7 +58,7 @@
 }
 "#,
             trial: r#"assert_eq!(
-    true_age(),
+    real_age(),
     18,
     "TRIAL: the ledger read a false age"
 );"#,
@@ -72,7 +72,7 @@
                 "str::parse",
                 "annotation: let x: u32",
             ],
-            solution: r#"fn true_age() -> u32 {
+            solution: r#"fn real_age() -> u32 {
     let age = "17";
     let age: u32 = age.parse().unwrap();
     age + 1

@@ -77,9 +77,18 @@ fn scene_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
                 }
                 ui.add_space(10.0);
                 ui.separator();
-                // Revealed tiers stay visible; each further whisper
-                // costs echoes — the lantern does not burn for free.
-                for hint in hints.iter().take(app.hints_shown) {
+
+                // Merciful lays the whole ladder open at once — a
+                // beginner should never be stranded one paid tier short
+                // of the near-solution. Nightfarer reveals one paid
+                // whisper at a time.
+                let merciful = app.progress.difficulty == borrowborne_core::Difficulty::Easy;
+                let revealed = if merciful {
+                    hints.len()
+                } else {
+                    app.hints_shown
+                };
+                for hint in hints.iter().take(revealed) {
                     ui.label(
                         RichText::new(format!("🕯 {hint}"))
                             .italics()
@@ -87,24 +96,16 @@ fn scene_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
                     );
                     ui.add_space(2.0);
                 }
-                if app.hints_shown < hints.len() {
+                if merciful {
+                    // The lantern is already fully lit; nothing to buy.
+                } else if app.hints_shown < hints.len() {
                     let cost = app.progress.hint_cost(app.hints_shown);
-                    // Free hints (Easy) read as "whisper", not "— 0 ◉".
-                    let label = if cost == 0 {
-                        format!(
-                            "{} ({}/{})",
-                            tr.hint_whisper,
-                            app.hints_shown + 1,
-                            hints.len()
-                        )
-                    } else {
-                        format!(
-                            "{} — {cost}◉ ({}/{})",
-                            tr.hint_whisper,
-                            app.hints_shown + 1,
-                            hints.len()
-                        )
-                    };
+                    let label = format!(
+                        "{} — {cost}◉ ({}/{})",
+                        tr.hint_whisper,
+                        app.hints_shown + 1,
+                        hints.len()
+                    );
                     let affordable = app.progress.echoes >= cost;
                     if ui
                         .add_enabled(affordable, egui::Button::new(label))

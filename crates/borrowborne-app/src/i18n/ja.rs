@@ -34,7 +34,7 @@ pub static JA: Tr = Tr {
     difficulty_easy: "慈悲",
     difficulty_hint: "慈悲：ランタンは無料——ヒントは血の残響を消費しない。",
     difficulty_effect_normal: "夜渡り——標準の夜番：ヒントは残響を消費する（5 / 10 / 20）。",
-    difficulty_effect_easy: "慈悲——ランタンは無料：ヒントは残響を消費しない。",
+    difficulty_effect_easy: "慈悲——ランタンは無料で全灯：ヒントは全て表示され、残響を消費しない。Rust 初心者向け。",
 
     echoes: "残響",
     stain_here: "失った残響はここに眠る。試練を越えて取り戻せ。",

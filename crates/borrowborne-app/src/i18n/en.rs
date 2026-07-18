@@ -34,7 +34,7 @@ pub static EN: Tr = Tr {
     difficulty_easy: "Merciful",
     difficulty_hint: "Merciful: the lantern is free — hints cost no echoes.",
     difficulty_effect_normal: "Nightfarer — the standard vigil: hints cost echoes (5 / 10 / 20).",
-    difficulty_effect_easy: "Merciful — the lantern is free: hints cost no echoes.",
+    difficulty_effect_easy: "Merciful — the lantern is free and fully lit: every hint shown, no echoes spent. For those new to Rust.",
 
     echoes: "echoes",
     stain_here: "Your lost echoes lie here. Pass the trial to reclaim them.",

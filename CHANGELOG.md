@@ -5,6 +5,25 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ## [Unreleased]
 
+### Changed (playability feedback)
+
+- **Bigger fonts**: every text style is larger now, the monospace spell
+  editor most of all (egui's ~12 px default → 16 px) — the code was
+  the most-read and smallest text in the game.
+- **Merciful now lights the whole lantern**: in the Merciful covenant
+  every hint tier is shown at once (still free), so a beginner is never
+  stranded one paid whisper short of the near-solution line. This
+  answers the worry that even Easy could be "quit on entry" for someone
+  who has never written Rust. Nightfarer still reveals one paid tier at
+  a time.
+
+### Fixed
+
+- **Editor highlighting split identifiers with an embedded keyword**:
+  `true_age` rendered as `true` (red keyword) + `age` (green) because
+  the highlighter breaks words at underscores. Renamed to `real_age`;
+  a scan confirms it was the only such identifier in the content.
+
 ### Added
 
 - **Concurrency Keep** (6 puzzles): the final maze. `thread::spawn`
