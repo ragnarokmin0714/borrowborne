@@ -16,7 +16,9 @@ All notable changes to Borrowborne are documented here. Format follows
 - **Merciful covenant (Easy difficulty)**: chosen on the world map,
   it makes the lantern free — hints cost no echoes — for players who
   find the borrow checker punishment enough. Persisted with progress;
-  Nightfarer (Normal) keeps the echo economy.
+  Nightfarer (Normal) keeps the echo economy. A standing note under
+  the picker spells out what the chosen covenant actually does, so the
+  difference is never a mystery.
 - **BGM melody**: each region's drone now carries a sparse plucked
   melody — a minor-pentatonic motif riding above the root, rotated per
   region so no two regions play the same tune. The pluck envelopes

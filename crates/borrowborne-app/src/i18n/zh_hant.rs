@@ -33,6 +33,8 @@ pub static ZH: Tr = Tr {
     difficulty_normal: "夜行者",
     difficulty_easy: "慈悲",
     difficulty_hint: "慈悲：提燈免費——提示不花費任何血之迴響。",
+    difficulty_effect_normal: "夜行者——標準的守夜：提示需花費迴響（5 / 10 / 20）。",
+    difficulty_effect_easy: "慈悲——提燈免費：提示不花費任何迴響。",
 
     echoes: "迴響",
     stain_here: "你失落的迴響就在此處。通過試煉，將它們取回。",

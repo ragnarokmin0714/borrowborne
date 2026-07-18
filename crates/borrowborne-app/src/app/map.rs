@@ -66,6 +66,16 @@ pub fn central(app: &mut BorrowborneApp, ctx: &egui::Context) {
         })
         .response
         .on_hover_text(tr.difficulty_hint);
+
+        // A standing system note so the difference is never a mystery:
+        // spell out what the chosen covenant actually does, in place.
+        let effect = match app.progress.difficulty {
+            Difficulty::Normal => tr.difficulty_effect_normal,
+            Difficulty::Easy => tr.difficulty_effect_easy,
+        };
+        ui.vertical_centered(|ui| {
+            ui.label(RichText::new(effect).weak().small().italics());
+        });
         ui.add_space(8.0);
 
         egui::ScrollArea::vertical().show(ui, |ui| {

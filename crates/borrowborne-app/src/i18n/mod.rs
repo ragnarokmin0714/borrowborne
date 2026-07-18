@@ -95,6 +95,9 @@ pub struct Tr {
     pub difficulty_normal: &'static str,
     pub difficulty_easy: &'static str,
     pub difficulty_hint: &'static str,
+    /// Standing note under the picker: what the chosen covenant does.
+    pub difficulty_effect_normal: &'static str,
+    pub difficulty_effect_easy: &'static str,
 
     // Blood echoes.
     pub echoes: &'static str,
