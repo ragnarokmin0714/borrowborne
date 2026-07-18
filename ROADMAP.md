@@ -85,7 +85,10 @@ who want the true roguelike covenant.
       Autocomplete is deliberately out: that is rust-analyzer's job,
       not a game's. First tier (syntax highlighting + wounded-line
       callout in verdicts) shipped in 0.6.
-- [ ] Lifetime Shrine: lifetime annotation puzzles.
+- [x] Lifetime Shrine: lifetime annotation puzzles (5) — the function
+      lifetime, a struct that borrows, the lifetime on an impl block,
+      the dangling-borrow wall no `'a` can save, and a keeper-of-graves
+      boss tying all three together.
 - [ ] Concurrency Keep: threads / channels / `Arc<Mutex>` final maze.
 - [ ] Difficulty tiers, including **hardcore**: no save, one run,
       LeetCode-style algorithm dungeon lives here. (An **Easy /

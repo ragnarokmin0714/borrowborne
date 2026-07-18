@@ -1,0 +1,216 @@
+// Lifetime Shrine — lifetime annotations.
+//
+// The shrine's law: a reference may never outlive what it points at.
+// Every puzzle is a place the compiler cannot infer the tie by itself
+// and asks the hunter to name it — except ls-04, which teaches the
+// harder truth that some borrows cannot be saved by any annotation.
+//
+// Starters here fail with E0106 / E0726 / E0515 — the same missing-
+// lifetime family the Ownership Forest first hinted at. Trial
+// assertions MUST carry a "TRIAL: …" message.
+(
+    id: "lifetime-shrine",
+    name: "Lifetime Shrine",
+    tagline: "A reference must not outlive what it points at. Name the bond, or be refused.",
+    puzzles: [
+        (
+            id: "ls-01-the-longer-vigil",
+            title: "The Longer Vigil",
+            scene: "Two watchers stand the night, and the shrine keeps whichever name is longer. The spell hands back one of the two references it was given — but the compiler cannot tell how long that returned reference may live, because it does not know which watcher it came from.\n\nName the bond: promise that both inputs and the output share one lifetime `'a`, and the shrine is satisfied.",
+            concepts: [Lifetimes],
+            starter_code: r#"// Returns one of its two inputs — but which one? The compiler cannot
+// guess how long the result lives, so it demands a named lifetime.
+fn longer_name(a: &str, b: &str) -> &str {
+    if a.len() >= b.len() {
+        a
+    } else {
+        b
+    }
+}
+"#,
+            trial: r#"assert_eq!(longer_name("fear", "blood"), "blood", "TRIAL: the shrine kept the shorter name");
+assert_eq!(longer_name("nightmare", "day"), "nightmare", "TRIAL: the longer vigil was misjudged");"#,
+            hints: [
+                "A function returning a borrow must say how long that borrow lives — a lifetime parameter `'a`.",
+                "Declare `'a` after the name, then mark every `&str` that shares it: inputs and output alike.",
+                "fn longer_name<'a>(a: &'a str, b: &'a str) -> &'a str",
+            ],
+            toolbox: [
+                "lifetime param: <'a>",
+                "&'a str",
+                "tie inputs to output",
+            ],
+            solution: r#"fn longer_name<'a>(a: &'a str, b: &'a str) -> &'a str {
+    if a.len() >= b.len() {
+        a
+    } else {
+        b
+    }
+}
+"#,
+        ),
+        (
+            id: "ls-02-the-borrowed-epitaph",
+            title: "The Borrowed Epitaph",
+            scene: "A tombstone does not own its words — it only points at an epitaph carved elsewhere. In Rust, a struct that holds a reference must declare how long that reference lives, or it could outlive the very stone it quotes.\n\nGive the tomb a lifetime.",
+            concepts: [Lifetimes],
+            starter_code: r#"// A struct that holds a reference must name the reference's lifetime,
+// or the tomb could outlive the words it points at.
+struct Tomb {
+    epitaph: &str,
+}
+
+fn epitaph_len(words: &str) -> usize {
+    let tomb = Tomb { epitaph: words };
+    tomb.epitaph.len()
+}
+"#,
+            trial: r#"assert_eq!(epitaph_len("rest now"), 8, "TRIAL: the epitaph was miscounted");"#,
+            hints: [
+                "A reference stored in a struct needs a lifetime parameter on the struct itself.",
+                "Declare `<'a>` on the struct, then tie the field to it: `&'a str`.",
+                "struct Tomb<'a> { epitaph: &'a str }",
+            ],
+            toolbox: [
+                "struct Name<'a>",
+                "&'a str field",
+            ],
+            solution: r#"struct Tomb<'a> {
+    epitaph: &'a str,
+}
+
+fn epitaph_len(words: &str) -> usize {
+    let tomb = Tomb { epitaph: words };
+    tomb.epitaph.len()
+}
+"#,
+        ),
+        (
+            id: "ls-03-the-shrine-ledger",
+            title: "The Shrine Ledger",
+            scene: "The shrine's ledger points at a scroll of comma-separated names and can read the first. The struct already names its lifetime — but the `impl` block that gives it methods forgot to carry that same lifetime across, and a method cannot borrow from a `self` whose lifetime it never declared.\n\nCarry the lifetime onto the impl.",
+            concepts: [Lifetimes],
+            starter_code: r#"struct Ledger<'a> {
+    names: &'a str,
+}
+
+// The struct names its lifetime, but this impl block does not carry it.
+impl Ledger {
+    fn first_name(&self) -> &str {
+        self.names.split(',').next().unwrap_or("")
+    }
+}
+
+fn first_of(list: &str) -> String {
+    Ledger { names: list }.first_name().to_string()
+}
+"#,
+            trial: r#"assert_eq!(first_of("maria,gehrman,laurence"), "maria", "TRIAL: the ledger misread the first name");
+assert_eq!(first_of(""), "", "TRIAL: an empty ledger must read as nothing");"#,
+            hints: [
+                "An `impl` on a type that has a lifetime must declare and pass that lifetime too.",
+                "Both places need it: `impl<'a>` to declare, `Ledger<'a>` to apply.",
+                "impl<'a> Ledger<'a> { … }",
+            ],
+            toolbox: [
+                "impl<'a> Name<'a>",
+                "lifetime on impl block",
+            ],
+            solution: r#"struct Ledger<'a> {
+    names: &'a str,
+}
+
+impl<'a> Ledger<'a> {
+    fn first_name(&self) -> &str {
+        self.names.split(',').next().unwrap_or("")
+    }
+}
+
+fn first_of(list: &str) -> String {
+    Ledger { names: list }.first_name().to_string()
+}
+"#,
+        ),
+        (
+            id: "ls-04-the-vanishing-ink",
+            title: "The Vanishing Ink",
+            scene: "A hunter tries to carve an epitaph and hand back a reference to it — but the carving is made HERE, inside the spell, and dies the moment the spell returns. No lifetime annotation can save a borrow of something already gone; this is the wall lifetimes exist to guard.\n\nThe answer is not a cleverer `'a`. Stop borrowing what you made — hand back the words themselves, owned.",
+            concepts: [Lifetimes],
+            starter_code: r#"fn engrave(name: &str) -> &str {
+    // `full` is born here and dies when the function returns. Returning
+    // a reference to it would dangle — and no lifetime can rescue that.
+    // Return the owned String instead of a borrow of it.
+    let full = format!("here lies {name}");
+    &full
+}
+"#,
+            trial: r#"assert_eq!(engrave("Gascoigne"), "here lies Gascoigne", "TRIAL: the epitaph came out wrong");
+assert_eq!(engrave("Maria"), "here lies Maria", "TRIAL: the epitaph came out wrong");"#,
+            hints: [
+                "The value is created inside the function — a reference to it cannot outlive the return. This is not a lifetime you can name.",
+                "Change what you return: the owned `String`, not a `&str` pointing into it.",
+                "Return type `-> String`, and return `full` (drop the `&`).",
+            ],
+            toolbox: [
+                "return owned: -> String",
+                "can't borrow a local",
+                "format!",
+            ],
+            solution: r#"fn engrave(name: &str) -> String {
+    format!("here lies {name}")
+}
+"#,
+        ),
+        (
+            id: "ls-05-the-keeper-of-graves",
+            title: "The Keeper of Graves",
+            scene: "The shrine's keeper is a grave that remembers one name, and when asked, returns whichever is longer — the name it holds, or a passing epitaph offered to it. Everything the shrine taught, at once: a struct that borrows, an impl that carries the lifetime, and a method whose returned reference is tied to that same `'a` — for it may hand back either the stored name or the argument, and both must live equally long.\n\nName every bond. Then the shrine opens.",
+            concepts: [Lifetimes],
+            starter_code: r#"// Missing lifetimes throughout: the struct borrows, the impl must
+// carry the lifetime, and the method may return EITHER the stored name
+// or the passed epitaph — so both, and the output, must share one 'a.
+struct Grave {
+    name: &str,
+}
+
+impl Grave {
+    fn longer_mark(&self, epitaph: &str) -> &str {
+        if self.name.len() >= epitaph.len() {
+            self.name
+        } else {
+            epitaph
+        }
+    }
+}
+"#,
+            trial: r#"let g = Grave { name: "Gascoigne" };
+assert_eq!(g.longer_mark("hunter"), "Gascoigne", "TRIAL: the keeper forgot its own name");
+let g2 = Grave { name: "Amy" };
+assert_eq!(g2.longer_mark("beast"), "beast", "TRIAL: the longer mark was misjudged");"#,
+            hints: [
+                "Three places need `'a`: the struct, the impl block, and the method's epitaph argument and return.",
+                "The method returns either `self.name` or `epitaph`, so both must carry the struct's `'a` — annotate the argument `&'a str` and the return `&'a str`.",
+                "struct Grave<'a> { name: &'a str } / impl<'a> Grave<'a> { fn longer_mark(&self, epitaph: &'a str) -> &'a str { … } }",
+            ],
+            toolbox: [
+                "struct<'a> + impl<'a>",
+                "&'a str argument + return",
+                "tie method output to 'a",
+            ],
+            solution: r#"struct Grave<'a> {
+    name: &'a str,
+}
+
+impl<'a> Grave<'a> {
+    fn longer_mark(&self, epitaph: &'a str) -> &'a str {
+        if self.name.len() >= epitaph.len() {
+            self.name
+        } else {
+            epitaph
+        }
+    }
+}
+"#,
+        ),
+    ],
+)

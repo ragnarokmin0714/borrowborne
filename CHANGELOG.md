@@ -7,6 +7,14 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ### Added
 
+- **Lifetime Shrine** (5 puzzles): the first endgame region. The
+  function lifetime (`longest`-style `<'a>`), a struct that borrows,
+  the lifetime carried onto an `impl` block, the dangling-borrow wall
+  that no annotation can save (return owned instead), and a
+  keeper-of-graves boss tying struct + impl + a method whose returned
+  reference is bound to `'a`. Starters fail with the same E0106 /
+  E0726 / E0515 family the content gate compiles for real. 43 puzzles,
+  7 regions total, with its own BGM drone.
 - **Toolbox nudges**: every puzzle now shows a free, always-visible
   list of the syntax, methods, and types it may call for (e.g.
   `.unwrap_or()`, `match`, `Box<dyn Trait>`) — a step short of a hint,

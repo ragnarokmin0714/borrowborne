@@ -31,6 +31,7 @@ const EMBEDDED_CHAPTERS: &[&str] = &[
     include_str!("../../../../content/chapters/04-result-swamp.ron"),
     include_str!("../../../../content/chapters/05-trait-guild.ron"),
     include_str!("../../../../content/chapters/06-iterator-library.ron"),
+    include_str!("../../../../content/chapters/07-lifetime-shrine.ron"),
 ];
 
 /// Curse book, embedded for the same reason as the chapters. Disk
