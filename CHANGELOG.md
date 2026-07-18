@@ -5,6 +5,8 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-07-18
+
 ### Changed (playability feedback)
 
 - **Bigger fonts**: every text style is larger now, the monospace spell
