@@ -7,6 +7,15 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ### Added
 
+- **Algorithm Dungeon** (5 puzzles, hardcore-only): a vault of
+  complexity that appears on the map only under the Unforgiven
+  covenant, its node drawn in blood. Two-sum, sliding window, in-place
+  reversal, prefix sums, and a Kadane max-subarray boss. Four are
+  TLE-armored — the starter is a *correct* O(n²) or O(n·k) that the
+  trial floods (100k–200k inputs) until it blows past the 5 s budget;
+  the solution is the same answer in linear time. Regions can now be
+  flagged `hardcore_only` in the `.ron` schema. 54 puzzles, 9 regions
+  total, with its own BGM drone.
 - **Unforgiven covenant (hardcore)**: the third difficulty, the true
   roguelike vow — progress is never written to disk, and the run's end
   (seven deaths) wipes everything: solved gates, echoes, grades, all of

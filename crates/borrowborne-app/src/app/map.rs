@@ -89,31 +89,40 @@ pub fn central(app: &mut BorrowborneApp, ctx: &egui::Context) {
 
         egui::ScrollArea::vertical().show(ui, |ui| {
             let mut enter: Option<usize> = None;
+            let mut shown_any = false;
 
             for ix in 0..chapter_count {
+                // Hardcore-only regions (the dungeon) stay off the map
+                // unless the Unforgiven covenant is walked.
+                if !app.region_visible(ix) {
+                    continue;
+                }
                 let chapter = &app.curriculum.chapters[ix];
-                let unlocked = app.progress.chapter_unlocked(&app.curriculum, ix);
+                let unlocked = app.region_enterable(ix);
+                let hardcore = chapter.hardcore_only;
                 let solved = app.progress.solved_in(chapter);
                 let total = chapter.puzzles.len();
                 let (name, tagline) = (chapter.name.clone(), chapter.tagline.clone());
 
-                // The road between nodes.
-                if ix > 0 {
+                // The road between nodes (only after the first shown).
+                if shown_any {
                     ui.vertical_centered(|ui| {
                         ui.label(RichText::new("│\n▼").weak().small());
                     });
                 }
+                shown_any = true;
 
+                // The dungeon reads in blood; other open regions in gold.
+                let border = if hardcore {
+                    BLOOD
+                } else if unlocked {
+                    RUNE_GOLD
+                } else {
+                    ui.visuals().weak_text_color()
+                };
                 ui.vertical_centered(|ui| {
                     egui::Frame::group(ui.style())
-                        .stroke(egui::Stroke::new(
-                            1.0_f32,
-                            if unlocked {
-                                RUNE_GOLD
-                            } else {
-                                ui.visuals().weak_text_color()
-                            },
-                        ))
+                        .stroke(egui::Stroke::new(1.0_f32, border))
                         .show(ui, |ui| {
                             ui.set_width(360.0);
                             ui.label(
@@ -123,7 +132,12 @@ pub fn central(app: &mut BorrowborneApp, ctx: &egui::Context) {
                                     format!("🔒 {name}")
                                 })
                                 .strong()
-                                .size(17.0),
+                                .size(17.0)
+                                .color(if hardcore {
+                                    BLOOD
+                                } else {
+                                    ui.visuals().text_color()
+                                }),
                             );
                             ui.label(RichText::new(tagline).italics().weak());
                             ui.add_space(4.0);

@@ -42,6 +42,11 @@ pub struct Chapter {
     pub name: String,
     /// Flavor line shown on the map.
     pub tagline: String,
+    /// Hidden from the map unless the hunter walks the hardcore
+    /// covenant — the algorithm dungeon is the Unforgiven's reward.
+    /// Optional; defaults to a normal, always-visible region.
+    #[serde(default)]
+    pub hardcore_only: bool,
     /// Puzzles in intended solving order.
     pub puzzles: Vec<Puzzle>,
 }

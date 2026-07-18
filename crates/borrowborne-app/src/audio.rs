@@ -157,9 +157,9 @@ const BGM_LOOP_SECS: f32 = 12.0;
 const BGM_SAMPLE_RATE: u32 = 22_050;
 
 /// Root frequencies (Hz): map, village, forest, town, swamp, guild,
-/// library, shrine, keep. Each is chosen so root × 12 is an even
-/// integer (see module comment).
-const THEME_ROOTS: [f32; 9] = [55.0, 49.5, 41.5, 62.0, 37.0, 46.5, 58.5, 43.5, 53.5];
+/// library, shrine, keep, dungeon. Each is chosen so root × 12 is an
+/// even integer (see module comment).
+const THEME_ROOTS: [f32; 10] = [55.0, 49.5, 41.5, 62.0, 37.0, 46.5, 58.5, 43.5, 53.5, 47.0];
 
 fn themes() -> Vec<StaticSoundData> {
     THEME_ROOTS

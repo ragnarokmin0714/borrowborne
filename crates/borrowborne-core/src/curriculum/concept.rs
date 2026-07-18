@@ -34,4 +34,6 @@ pub enum Concept {
     Threads,
     Channels,
     SharedState,
+    // Algorithm Dungeon (hardcore) — complexity, not a language feature.
+    Algorithms,
 }

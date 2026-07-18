@@ -33,6 +33,7 @@ const EMBEDDED_CHAPTERS: &[&str] = &[
     include_str!("../../../../content/chapters/06-iterator-library.ron"),
     include_str!("../../../../content/chapters/07-lifetime-shrine.ron"),
     include_str!("../../../../content/chapters/08-concurrency-keep.ron"),
+    include_str!("../../../../content/chapters/09-algorithm-dungeon.ron"),
 ];
 
 /// Curse book, embedded for the same reason as the chapters. Disk
@@ -390,13 +391,34 @@ impl BorrowborneApp {
         self.screen = Screen::Map;
     }
 
+    /// Whether a region shows on the map at all. Hardcore-only regions
+    /// (the algorithm dungeon) stay hidden unless the Unforgiven
+    /// covenant is walked.
+    fn region_visible(&self, ix: usize) -> bool {
+        match self.curriculum.chapters.get(ix) {
+            Some(ch) => !ch.hardcore_only || self.difficulty == Difficulty::Hardcore,
+            None => false,
+        }
+    }
+
+    /// Whether a region can be entered now: visible, and either past
+    /// its seal or (for the hardcore dungeon) simply open to the
+    /// Unforgiven, who earned it by taking the vow.
+    fn region_enterable(&self, ix: usize) -> bool {
+        let Some(ch) = self.curriculum.chapters.get(ix) else {
+            return false;
+        };
+        if ch.hardcore_only {
+            self.difficulty == Difficulty::Hardcore
+        } else {
+            self.progress.chapter_unlocked(&self.curriculum, ix)
+        }
+    }
+
     /// Enter a region from the map: land on its first unsolved door
     /// (or the first door when all are open).
     pub fn enter_chapter(&mut self, ix: usize) {
-        if ix >= self.curriculum.chapters.len()
-            || !self.progress.chapter_unlocked(&self.curriculum, ix)
-            || self.casting()
-        {
+        if ix >= self.curriculum.chapters.len() || !self.region_enterable(ix) || self.casting() {
             return;
         }
         self.chapter_ix = ix;
@@ -423,10 +445,8 @@ impl BorrowborneApp {
         if forward {
             if self.puzzle_ix + 1 < count {
                 self.puzzle_ix += 1;
-            } else if self
-                .progress
-                .chapter_unlocked(&self.curriculum, self.chapter_ix + 1)
-                && self.chapter_ix + 1 < self.curriculum.chapters.len()
+            } else if self.chapter_ix + 1 < self.curriculum.chapters.len()
+                && self.region_enterable(self.chapter_ix + 1)
             {
                 self.chapter_ix += 1;
                 self.puzzle_ix = 0;
@@ -451,9 +471,7 @@ impl BorrowborneApp {
         if forward {
             self.puzzle_ix + 1 < self.curriculum.chapters[self.chapter_ix].puzzles.len()
                 || (self.chapter_ix + 1 < self.curriculum.chapters.len()
-                    && self
-                        .progress
-                        .chapter_unlocked(&self.curriculum, self.chapter_ix + 1))
+                    && self.region_enterable(self.chapter_ix + 1))
         } else {
             self.puzzle_ix > 0 || self.chapter_ix > 0
         }
@@ -509,5 +527,33 @@ impl eframe::App for BorrowborneApp {
         eframe::set_value(storage, "muted", &self.muted);
         eframe::set_value(storage, "sfx_vol", &self.sfx_vol);
         eframe::set_value(storage, "bgm_vol", &self.bgm_vol);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The algorithm dungeon is the Unforgiven's alone: hidden and
+    /// sealed under Normal/Easy, shown and open under Hardcore. A
+    /// normal region stays visible under every covenant.
+    #[test]
+    fn hardcore_dungeon_is_gated_by_the_covenant() {
+        let mut app = BorrowborneApp::headless();
+        let dungeon = app
+            .curriculum
+            .chapters
+            .iter()
+            .position(|c| c.hardcore_only)
+            .expect("the embedded content must include the hardcore dungeon");
+
+        app.difficulty = Difficulty::Normal;
+        assert!(!app.region_visible(dungeon), "hidden off hardcore");
+        assert!(!app.region_enterable(dungeon), "sealed off hardcore");
+        assert!(app.region_visible(0), "normal regions always show");
+
+        app.difficulty = Difficulty::Hardcore;
+        assert!(app.region_visible(dungeon), "shown to the Unforgiven");
+        assert!(app.region_enterable(dungeon), "open to the Unforgiven");
     }
 }

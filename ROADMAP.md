@@ -99,7 +99,11 @@ who want the true roguelike covenant.
       disk save; the run's end wipes all progress). Difficulty is now a
       persisted *setting*, not part of progress, so the no-save
       covenant is clean.
-- [ ] LeetCode-style algorithm dungeon (a hardcore-only region).
+- [x] LeetCode-style algorithm dungeon (a hardcore-only region, 5
+      puzzles): two-sum, sliding window, in-place reversal, prefix
+      sums, and a Kadane boss. Four are TLE-armored — a correct O(n²)
+      or O(n·k) starter the trial floods past the 5 s budget. Hidden
+      off the hardcore covenant; shown in blood when the vow is taken.
 
 ## Later
 

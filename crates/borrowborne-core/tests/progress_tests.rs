@@ -12,6 +12,7 @@ fn tiny_curriculum() -> Curriculum {
             id: "test-chapter".into(),
             name: String::new(),
             tagline: String::new(),
+            hardcore_only: false,
             puzzles: vec![Puzzle {
                 id: "known-puzzle".into(),
                 title: String::new(),
@@ -299,12 +300,14 @@ fn chapters_unseal_at_the_threshold() {
                 id: "a".into(),
                 name: String::new(),
                 tagline: String::new(),
+                hardcore_only: false,
                 puzzles: (0..10).map(|i| mk(&format!("a-{i}"))).collect(),
             },
             Chapter {
                 id: "b".into(),
                 name: String::new(),
                 tagline: String::new(),
+                hardcore_only: false,
                 puzzles: vec![mk("b-0")],
             },
         ],
