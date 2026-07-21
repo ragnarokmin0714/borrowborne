@@ -37,3 +37,34 @@ pub enum Concept {
     // Algorithm Dungeon (hardcore) — complexity, not a language feature.
     Algorithms,
 }
+
+impl Concept {
+    /// Short Rust-term label for the journal's skill node. Left in
+    /// English on purpose: these are Rust's own terms (`&mut`, `match`,
+    /// `Arc<Mutex>`), the same in every UI language.
+    pub fn label(self) -> &'static str {
+        match self {
+            Concept::Variables => "variables",
+            Concept::Mutability => "mut",
+            Concept::ControlFlow => "control flow",
+            Concept::Move => "move",
+            Concept::Borrow => "& borrow",
+            Concept::MutBorrow => "&mut",
+            Concept::Structs => "struct",
+            Concept::Enums => "enum",
+            Concept::Match => "match",
+            Concept::OptionType => "Option",
+            Concept::ResultType => "Result",
+            Concept::QuestionMark => "? operator",
+            Concept::Traits => "trait",
+            Concept::Generics => "generics",
+            Concept::Collections => "collections",
+            Concept::Iterators => "iterators",
+            Concept::Lifetimes => "lifetimes",
+            Concept::Threads => "threads",
+            Concept::Channels => "channels",
+            Concept::SharedState => "Arc<Mutex>",
+            Concept::Algorithms => "algorithms",
+        }
+    }
+}

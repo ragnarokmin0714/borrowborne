@@ -57,6 +57,10 @@ pub static ZH: Tr = Tr {
     sound_sfx: "音效",
     sound_bgm: "音樂",
 
+    journal_button: "📖 日誌",
+    journal_title: "獵人日誌",
+    journal_trials: "通過試煉",
+    journal_concepts: "精通之道",
     hunter_label: "獵人",
     hunter_default: "異鄉人",
     map_title: "長夜之地",

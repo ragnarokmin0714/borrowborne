@@ -128,6 +128,12 @@ pub struct Tr {
     pub sound_sfx: &'static str,
     pub sound_bgm: &'static str,
 
+    // The hunter's journal.
+    pub journal_button: &'static str,
+    pub journal_title: &'static str,
+    pub journal_trials: &'static str,
+    pub journal_concepts: &'static str,
+
     // World map.
     pub hunter_label: &'static str,
     /// Shown while the hunter is still nameless (empty saved name):

@@ -64,3 +64,25 @@ fn curriculum_size_never_regresses() {
     // means a chapter file failed to load or was accidentally dropped.
     assert!(curriculum().puzzle_count() >= 13);
 }
+
+#[test]
+fn chapter_concepts_are_deduped_and_ordered() {
+    // The journal's skill nodes come from Chapter::concepts(): the
+    // distinct concepts a region teaches, in first-seen order, with no
+    // repeats even though many puzzles share a concept.
+    for ch in &curriculum().chapters {
+        let concepts = ch.concepts();
+        let mut seen = HashSet::new();
+        for c in &concepts {
+            assert!(seen.insert(*c), "{}: concept {c:?} listed twice", ch.id);
+        }
+        // Every listed concept is taught by some puzzle in the region.
+        for c in &concepts {
+            assert!(
+                ch.puzzles.iter().any(|p| p.concepts.contains(c)),
+                "{}: {c:?} belongs to no puzzle",
+                ch.id
+            );
+        }
+    }
+}

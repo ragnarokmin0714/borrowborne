@@ -19,6 +19,9 @@ pub fn top_bar(app: &mut BorrowborneApp, ctx: &egui::Context) {
             if ui.button(tr.map_button).clicked() {
                 app.show_map();
             }
+            if ui.button(tr.journal_button).clicked() {
+                app.show_journal();
+            }
             let speaker = if app.muted() { "🔇" } else { "🔊" };
             ui.menu_button(speaker, |ui| {
                 ui.set_min_width(170.0);

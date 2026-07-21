@@ -57,6 +57,10 @@ pub static JA: Tr = Tr {
     sound_sfx: "効果音",
     sound_bgm: "音楽",
 
+    journal_button: "📖 日誌",
+    journal_title: "狩人の日誌",
+    journal_trials: "突破した試練",
+    journal_concepts: "会得した道",
     hunter_label: "狩人",
     hunter_default: "異邦人",
     map_title: "夜の国",

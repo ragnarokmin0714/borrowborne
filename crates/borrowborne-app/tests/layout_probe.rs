@@ -18,12 +18,14 @@ fn probe_app(app: &mut BorrowborneApp, size: egui::Vec2) {
     }
 }
 
-/// Both screens, at the given size: the map (headless default) and a
-/// puzzle entered from it.
+/// Every screen, at the given size: the map (headless default), a
+/// puzzle entered from it, and the hunter's journal.
 fn probe(size: egui::Vec2) {
     let mut app = BorrowborneApp::headless();
     probe_app(&mut app, size);
     app.enter_chapter(0);
+    probe_app(&mut app, size);
+    app.show_journal();
     probe_app(&mut app, size);
 }
 

@@ -51,6 +51,20 @@ pub struct Chapter {
     pub puzzles: Vec<Puzzle>,
 }
 
+impl Chapter {
+    /// The distinct concepts this region teaches, in first-seen order —
+    /// the skill nodes shown for it in the journal.
+    pub fn concepts(&self) -> Vec<Concept> {
+        let mut seen = Vec::new();
+        for concept in self.puzzles.iter().flat_map(|p| &p.concepts) {
+            if !seen.contains(concept) {
+                seen.push(*concept);
+            }
+        }
+        seen
+    }
+}
+
 /// One locked door: a scene, a starting spell, and hidden trials.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Puzzle {

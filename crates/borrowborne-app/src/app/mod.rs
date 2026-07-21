@@ -1,6 +1,7 @@
 //! The Borrowborne application: state, the frame loop, and casting.
 
 mod chrome;
+mod journal;
 mod map;
 mod puzzle;
 mod verdict_view;
@@ -47,6 +48,8 @@ enum Screen {
     Map,
     /// One puzzle: scene, editor, verdicts.
     Puzzle,
+    /// The hunter's journal: stats and the skill tree of learned Rust.
+    Journal,
 }
 
 pub struct BorrowborneApp {
@@ -242,7 +245,7 @@ impl BorrowborneApp {
     /// one per chapter in order.
     fn theme_ix(&self) -> usize {
         match self.screen {
-            Screen::Map => 0,
+            Screen::Map | Screen::Journal => 0,
             Screen::Puzzle => 1 + self.chapter_ix,
         }
     }
@@ -391,6 +394,11 @@ impl BorrowborneApp {
         self.screen = Screen::Map;
     }
 
+    /// Open the hunter's journal.
+    pub fn show_journal(&mut self) {
+        self.screen = Screen::Journal;
+    }
+
     /// Whether a region shows on the map at all. Hardcore-only regions
     /// (the algorithm dungeon) stay hidden unless the Unforgiven
     /// covenant is walked.
@@ -485,6 +493,7 @@ impl BorrowborneApp {
         match self.screen {
             Screen::Map => map::central(self, ctx),
             Screen::Puzzle => puzzle::central(self, ctx),
+            Screen::Journal => journal::central(self, ctx),
         }
         self.fx.tick(ctx);
 

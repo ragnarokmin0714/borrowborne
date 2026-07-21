@@ -7,6 +7,13 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ### Added
 
+- **The Hunter's Journal**: a new screen (📖 in the top bar) that makes
+  the whole point of the game visible — the Rust you've learned. It
+  shows trials passed, concepts mastered, deaths and echoes, and a
+  per-region skill tree where each concept lights gold once a puzzle
+  teaches it. Concept labels stay in Rust's own terms (`&mut`, `match`,
+  `Arc<Mutex>`) in every language; the hardcore dungeon's nodes stay
+  hidden off the covenant, here as on the map.
 - **Algorithm Dungeon** (5 puzzles, hardcore-only): a vault of
   complexity that appears on the map only under the Unforgiven
   covenant, its node drawn in blood. Two-sum, sliding window, in-place

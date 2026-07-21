@@ -57,6 +57,10 @@ pub static EN: Tr = Tr {
     sound_sfx: "Effects",
     sound_bgm: "Music",
 
+    journal_button: "📖 Journal",
+    journal_title: "The Hunter's Journal",
+    journal_trials: "Trials passed",
+    journal_concepts: "Rust mastered",
     hunter_label: "Hunter",
     hunter_default: "Outlander",
     map_title: "The Night Lands",
