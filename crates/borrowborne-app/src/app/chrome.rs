@@ -23,56 +23,14 @@ pub fn top_bar(app: &mut BorrowborneApp, ctx: &egui::Context) {
                 app.show_journal();
             }
 
-            // Text-size control: scales the whole UI (editor included),
-            // so big or high-DPI screens are not stuck with tiny code.
-            ui.separator();
-            ui.label(RichText::new(tr.text_size).weak());
-            if ui.small_button("A-").on_hover_text(tr.text_size).clicked() {
-                app.bump_ui_scale(ctx, false);
-            }
-            ui.label(format!("{:.0}%", app.ui_scale() * 100.0));
-            if ui.small_button("A+").on_hover_text(tr.text_size).clicked() {
-                app.bump_ui_scale(ctx, true);
-            }
-            let speaker = if app.muted() { "🔇" } else { "🔊" };
-            ui.menu_button(speaker, |ui| {
-                ui.set_min_width(170.0);
-                let mut muted = app.muted();
-                if ui.checkbox(&mut muted, tr.sound_mute).changed() {
-                    app.toggle_mute();
-                }
-                let sfx = ui
-                    .horizontal(|ui| {
-                        ui.label(tr.sound_sfx);
-                        ui.add(egui::Slider::new(&mut app.sfx_vol, 0.0..=1.0).show_value(false))
-                            .changed()
-                    })
-                    .inner;
-                let bgm = ui
-                    .horizontal(|ui| {
-                        ui.label(tr.sound_bgm);
-                        ui.add(egui::Slider::new(&mut app.bgm_vol, 0.0..=1.0).show_value(false))
-                            .changed()
-                    })
-                    .inner;
-                if sfx || bgm {
-                    app.apply_volumes();
-                    app.dirty = true;
-                }
+            // One settings menu, so the bar stays uncluttered: language,
+            // text size, sound, and the version all live behind ⚙.
+            let gear = if app.muted() { "⚙ 🔇" } else { "⚙" };
+            ui.menu_button(gear, |ui| {
+                settings_menu(app, ctx, ui);
             });
 
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                egui::ComboBox::from_id_source("lang")
-                    .selected_text(app.lang.label())
-                    .show_ui(ui, |ui| {
-                        for lang in Lang::ALL {
-                            ui.selectable_value(&mut app.lang, lang, lang.label());
-                        }
-                    });
-                ui.label(RichText::new(tr.language).weak());
-
-                ui.separator();
-
                 // Lives as hearts; the run's pulse.
                 let hearts = "♥".repeat(app.progress.lives_left() as usize);
                 ui.label(RichText::new(hearts).color(BLOOD));
@@ -133,4 +91,77 @@ pub fn top_bar(app: &mut BorrowborneApp, ctx: &egui::Context) {
         });
         ui.add_space(4.0);
     });
+}
+
+/// The unified settings menu behind ⚙: language, text size, sound, and
+/// the version. Kept here so the top bar itself stays a thin strip.
+fn settings_menu(app: &mut BorrowborneApp, ctx: &egui::Context, ui: &mut egui::Ui) {
+    let tr = app.lang.strings();
+    ui.set_min_width(230.0);
+
+    // Language.
+    ui.horizontal(|ui| {
+        ui.label(RichText::new(tr.language).weak());
+        let before = app.lang;
+        egui::ComboBox::from_id_source("lang")
+            .selected_text(app.lang.label())
+            .show_ui(ui, |ui| {
+                for lang in Lang::ALL {
+                    ui.selectable_value(&mut app.lang, lang, lang.label());
+                }
+            });
+        if app.lang != before {
+            app.dirty = true;
+        }
+    });
+
+    ui.separator();
+
+    // Text size: scales the whole UI (the code editor included), so big
+    // or high-DPI screens are not stuck with tiny code.
+    ui.horizontal(|ui| {
+        ui.label(RichText::new(tr.text_size).weak());
+        if ui.small_button("A-").clicked() {
+            app.bump_ui_scale(ctx, false);
+        }
+        ui.label(format!("{:.0}%", app.ui_scale() * 100.0));
+        if ui.small_button("A+").clicked() {
+            app.bump_ui_scale(ctx, true);
+        }
+    });
+
+    ui.separator();
+
+    // Sound.
+    let mut muted = app.muted();
+    if ui.checkbox(&mut muted, tr.sound_mute).changed() {
+        app.toggle_mute();
+    }
+    let sfx = ui
+        .horizontal(|ui| {
+            ui.label(tr.sound_sfx);
+            ui.add(egui::Slider::new(&mut app.sfx_vol, 0.0..=1.0).show_value(false))
+                .changed()
+        })
+        .inner;
+    let bgm = ui
+        .horizontal(|ui| {
+            ui.label(tr.sound_bgm);
+            ui.add(egui::Slider::new(&mut app.bgm_vol, 0.0..=1.0).show_value(false))
+                .changed()
+        })
+        .inner;
+    if sfx || bgm {
+        app.apply_volumes();
+        app.dirty = true;
+    }
+
+    ui.separator();
+
+    // Version.
+    ui.label(
+        RichText::new(format!("{APP_NAME} v{}", env!("CARGO_PKG_VERSION")))
+            .weak()
+            .small(),
+    );
 }

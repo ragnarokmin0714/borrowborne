@@ -5,6 +5,15 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **One settings menu (⚙)**: language, text size, sound, and the
+  version now live together behind a single gear in the top bar,
+  instead of scattered controls that crowded each other (the A-/A+
+  buttons in particular collided with their label). The top bar keeps
+  only navigation on the left and run stats on the right; a mute
+  indicator rides the gear (⚙ 🔇) so sound state still reads at a glance.
+
 ## [0.8.0] - 2026-07-21
 
 ### Changed (playability feedback)
