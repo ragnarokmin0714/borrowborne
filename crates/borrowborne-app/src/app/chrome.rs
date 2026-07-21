@@ -23,14 +23,16 @@ pub fn top_bar(app: &mut BorrowborneApp, ctx: &egui::Context) {
                 app.show_journal();
             }
 
-            // One settings menu, so the bar stays uncluttered: language,
-            // text size, sound, and the version all live behind ⚙.
-            let gear = if app.muted() { "⚙ 🔇" } else { "⚙" };
-            ui.menu_button(gear, |ui| {
-                settings_menu(app, ctx, ui);
-            });
-
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                // Settings live behind one gear at the far right — the
+                // conventional corner — holding language, text size,
+                // sound, and the version. Navigation stays on the left.
+                ui.menu_button("⚙", |ui| {
+                    settings_menu(app, ctx, ui);
+                });
+
+                ui.separator();
+
                 // Lives as hearts; the run's pulse.
                 let hearts = "♥".repeat(app.progress.lives_left() as usize);
                 ui.label(RichText::new(hearts).color(BLOOD));

@@ -5,14 +5,23 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **Editor text and caret now match in size**: the syntax highlighter
+  was laying the code out at its own smaller font, so the editor text
+  stayed small despite the monospace bump and the caret (sized from the
+  text style) stood taller than the glyphs. Every highlighted section
+  is now forced to the editor's monospace size — the code is as large
+  as intended and the caret lines up.
+
 ### Changed
 
 - **One settings menu (⚙)**: language, text size, sound, and the
-  version now live together behind a single gear in the top bar,
-  instead of scattered controls that crowded each other (the A-/A+
-  buttons in particular collided with their label). The top bar keeps
-  only navigation on the left and run stats on the right; a mute
-  indicator rides the gear (⚙ 🔇) so sound state still reads at a glance.
+  version now live together behind a single gear, moved to the far
+  right (the conventional corner). The top bar keeps navigation
+  (map/journal) on the left and run stats on the right, with the gear
+  between the stats and the edge — no more controls crowding each other
+  (the A-/A+ buttons had collided with their label).
 
 ## [0.8.0] - 2026-07-21
 

@@ -171,6 +171,14 @@ fn editor_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
                 let mut layouter = |ui: &egui::Ui, text: &str, wrap_width: f32| {
                     let mut job =
                         egui_extras::syntax_highlighting::highlight(ui.ctx(), &theme, text, "rs");
+                    // The highlighter lays out at its own (smaller) font;
+                    // force every section to the editor's Monospace size
+                    // so the text is as large as intended AND the caret
+                    // — sized from the text style — matches the glyphs.
+                    let mono = egui::TextStyle::Monospace.resolve(ui.style());
+                    for section in &mut job.sections {
+                        section.format.font_id = mono.clone();
+                    }
                     job.wrap.max_width = wrap_width;
                     ui.fonts(|f| f.layout_job(job))
                 };
