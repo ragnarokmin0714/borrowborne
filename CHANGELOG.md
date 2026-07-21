@@ -5,6 +5,8 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-07-21
+
 ### Changed (playability feedback)
 
 - **Adjustable text size (UI zoom)**: an A-/A+ control in the top bar
