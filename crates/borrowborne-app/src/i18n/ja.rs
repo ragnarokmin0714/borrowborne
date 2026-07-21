@@ -57,6 +57,7 @@ pub static JA: Tr = Tr {
     sound_sfx: "効果音",
     sound_bgm: "音楽",
 
+    text_size: "文字サイズ",
     journal_button: "📖 日誌",
     journal_title: "狩人の日誌",
     journal_trials: "突破した試練",

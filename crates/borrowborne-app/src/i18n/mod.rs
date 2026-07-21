@@ -128,6 +128,9 @@ pub struct Tr {
     pub sound_sfx: &'static str,
     pub sound_bgm: &'static str,
 
+    /// Tooltip on the A-/A+ text-size (UI zoom) control.
+    pub text_size: &'static str,
+
     // The hunter's journal.
     pub journal_button: &'static str,
     pub journal_title: &'static str,

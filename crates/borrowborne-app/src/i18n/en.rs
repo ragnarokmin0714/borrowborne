@@ -57,6 +57,7 @@ pub static EN: Tr = Tr {
     sound_sfx: "Effects",
     sound_bgm: "Music",
 
+    text_size: "Text size",
     journal_button: "📖 Journal",
     journal_title: "The Hunter's Journal",
     journal_trials: "Trials passed",

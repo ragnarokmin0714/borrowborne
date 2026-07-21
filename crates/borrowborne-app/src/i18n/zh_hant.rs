@@ -57,6 +57,7 @@ pub static ZH: Tr = Tr {
     sound_sfx: "音效",
     sound_bgm: "音樂",
 
+    text_size: "文字大小",
     journal_button: "📖 日誌",
     journal_title: "獵人日誌",
     journal_trials: "通過試煉",

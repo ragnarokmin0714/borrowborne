@@ -22,6 +22,18 @@ pub fn top_bar(app: &mut BorrowborneApp, ctx: &egui::Context) {
             if ui.button(tr.journal_button).clicked() {
                 app.show_journal();
             }
+
+            // Text-size control: scales the whole UI (editor included),
+            // so big or high-DPI screens are not stuck with tiny code.
+            ui.separator();
+            ui.label(RichText::new(tr.text_size).weak());
+            if ui.small_button("A-").on_hover_text(tr.text_size).clicked() {
+                app.bump_ui_scale(ctx, false);
+            }
+            ui.label(format!("{:.0}%", app.ui_scale() * 100.0));
+            if ui.small_button("A+").on_hover_text(tr.text_size).clicked() {
+                app.bump_ui_scale(ctx, true);
+            }
             let speaker = if app.muted() { "🔇" } else { "🔊" };
             ui.menu_button(speaker, |ui| {
                 ui.set_min_width(170.0);

@@ -92,7 +92,15 @@ pub struct BorrowborneApp {
     /// The covenant. A setting, persisted on its own — a hardcore
     /// hunter's choice survives even though their progress does not.
     difficulty: Difficulty,
+    /// UI zoom factor (egui), persisted — the A-/A+ control. Scales the
+    /// whole interface, the code editor included, for large screens.
+    ui_scale: f32,
 }
+
+/// Bounds and step for the UI zoom control.
+const UI_SCALE_MIN: f32 = 0.8;
+const UI_SCALE_MAX: f32 = 2.5;
+const UI_SCALE_STEP: f32 = 0.1;
 
 impl BorrowborneApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
@@ -125,10 +133,14 @@ impl BorrowborneApp {
             if let Some(v) = eframe::get_value(storage, "bgm_vol") {
                 app.bgm_vol = v;
             }
+            if let Some(v) = eframe::get_value::<f32>(storage, "ui_scale") {
+                app.ui_scale = v.clamp(UI_SCALE_MIN, UI_SCALE_MAX);
+            }
         }
         app.ensure_curse();
         theme::apply(&cc.egui_ctx);
         fonts::apply(&cc.egui_ctx, &fonts::load_cjk());
+        cc.egui_ctx.set_zoom_factor(app.ui_scale);
         app
     }
 
@@ -169,6 +181,7 @@ impl BorrowborneApp {
             sfx_vol: 1.0,
             bgm_vol: 0.8,
             difficulty: Difficulty::Normal,
+            ui_scale: 1.0,
         };
         app.ensure_curse();
         app
@@ -399,6 +412,20 @@ impl BorrowborneApp {
         self.screen = Screen::Journal;
     }
 
+    /// Step the UI zoom up or down (the A-/A+ buttons), clamped and
+    /// persisted. Applies to the whole interface, editor included.
+    pub fn bump_ui_scale(&mut self, ctx: &egui::Context, up: bool) {
+        let delta = if up { UI_SCALE_STEP } else { -UI_SCALE_STEP };
+        self.ui_scale = (self.ui_scale + delta).clamp(UI_SCALE_MIN, UI_SCALE_MAX);
+        ctx.set_zoom_factor(self.ui_scale);
+        self.dirty = true;
+    }
+
+    /// Current UI zoom, for the control's readout.
+    pub fn ui_scale(&self) -> f32 {
+        self.ui_scale
+    }
+
     /// Whether a region shows on the map at all. Hardcore-only regions
     /// (the algorithm dungeon) stay hidden unless the Unforgiven
     /// covenant is walked.
@@ -488,6 +515,14 @@ impl BorrowborneApp {
     /// One full frame. Split from `update` so the headless layout
     /// probe can drive it without an eframe window.
     pub fn draw(&mut self, ctx: &egui::Context) {
+        // egui may change its own zoom (Ctrl +/-); adopt and persist it
+        // so keyboard zoom sticks like the A-/A+ buttons do.
+        let z = ctx.zoom_factor();
+        if (z - self.ui_scale).abs() > 0.001 {
+            self.ui_scale = z;
+            self.dirty = true;
+        }
+
         self.poll_cast();
         chrome::top_bar(self, ctx);
         match self.screen {
@@ -536,6 +571,7 @@ impl eframe::App for BorrowborneApp {
         eframe::set_value(storage, "muted", &self.muted);
         eframe::set_value(storage, "sfx_vol", &self.sfx_vol);
         eframe::set_value(storage, "bgm_vol", &self.bgm_vol);
+        eframe::set_value(storage, "ui_scale", &self.ui_scale);
     }
 }
 

@@ -5,6 +5,14 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ## [Unreleased]
 
+### Changed (playability feedback)
+
+- **Adjustable text size (UI zoom)**: an A-/A+ control in the top bar
+  scales the whole interface — the code editor most of all — for big
+  and high-DPI screens where the fixed sizes were still too small.
+  Persisted, and keyboard zoom (Ctrl +/-) sticks too. The base
+  monospace size also went up again (16 → 18 px).
+
 ### Added
 
 - **The Hunter's Journal**: a new screen (📖 in the top bar) that makes

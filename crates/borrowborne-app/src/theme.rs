@@ -51,24 +51,26 @@ pub fn apply(ctx: &egui::Context) {
     // spell editor renders in Monospace — the most-read text in the
     // game. Bump every text style so nothing strains the eyes, the
     // code editor most of all.
+    // Base sizes at 100%; the top-bar A-/A+ control scales the whole
+    // UI on top of these (egui zoom) for big or high-DPI screens.
     use egui::{FontFamily, FontId, TextStyle};
     style.text_styles = [
         (
             TextStyle::Small,
-            FontId::new(12.0, FontFamily::Proportional),
+            FontId::new(13.0, FontFamily::Proportional),
         ),
-        (TextStyle::Body, FontId::new(15.0, FontFamily::Proportional)),
+        (TextStyle::Body, FontId::new(16.0, FontFamily::Proportional)),
         (
             TextStyle::Button,
-            FontId::new(15.0, FontFamily::Proportional),
+            FontId::new(16.0, FontFamily::Proportional),
         ),
         (
             TextStyle::Heading,
-            FontId::new(22.0, FontFamily::Proportional),
+            FontId::new(23.0, FontFamily::Proportional),
         ),
         (
             TextStyle::Monospace,
-            FontId::new(16.0, FontFamily::Monospace),
+            FontId::new(18.0, FontFamily::Monospace),
         ),
     ]
     .into();
