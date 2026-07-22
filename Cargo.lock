@@ -249,7 +249,7 @@ dependencies = [
 
 [[package]]
 name = "borrowborne-app"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "borrowborne-core",
  "borrowborne-runner",
@@ -265,7 +265,7 @@ dependencies = [
 
 [[package]]
 name = "borrowborne-core"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "ron",
  "serde",
@@ -275,7 +275,7 @@ dependencies = [
 
 [[package]]
 name = "borrowborne-runner"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "borrowborne-core",
  "serde",

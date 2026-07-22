@@ -5,6 +5,8 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-07-23
+
 ### Fixed
 
 - **Editor clipboard works with the OS again** (issue #3): the app
