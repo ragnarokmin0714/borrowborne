@@ -69,6 +69,8 @@ pub struct Tr {
     pub next_puzzle: &'static str,
     pub prev_puzzle: &'static str,
     pub editor_hint: &'static str,
+    /// Discoverable editing shortcuts under the spell editor.
+    pub editor_keys: &'static str,
     pub solved_badge: &'static str,
 
     // Verdicts, performed as the voice of the world.

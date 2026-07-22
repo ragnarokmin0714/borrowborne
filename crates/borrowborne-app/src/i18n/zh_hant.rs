@@ -13,6 +13,7 @@ pub static ZH: Tr = Tr {
     next_puzzle: "下一關 ▶",
     prev_puzzle: "◀ 上一關",
     editor_hint: "以真正的 Rust 書寫你的咒文。世界只為能編譯的程式碼讓路。",
+    editor_keys: "Ctrl+C/X/V · Ctrl+Z 復原 · Ctrl+Y 重做 · Tab 縮排",
     solved_badge: "門已開啟",
 
     verdict_pass_title: "大門開啟",

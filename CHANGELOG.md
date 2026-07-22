@@ -7,6 +7,16 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ### Fixed
 
+- **Editor clipboard works with the OS again** (issue #3): the app
+  disabled eframe's default features, which dropped `x11`/`wayland` —
+  so on a Wayland session the editor's Cut/Copy/Paste fell back to an
+  in-app-only stub instead of the real system clipboard. Both platform
+  features are back on. Undo/redo (Ctrl+Z / Ctrl+Y) and Tab-to-indent
+  were already provided by egui's code editor; a new shortcut line
+  under the editor makes all of them discoverable. (Full Rust
+  autocomplete/intellisense stays out of scope — that is
+  rust-analyzer's job, not a game's; the wounded-line callout and the
+  per-puzzle toolbox are the intelligence the game offers.)
 - **Editor text and caret now match in size**: the syntax highlighter
   was laying the code out at its own smaller font, so the editor text
   stayed small despite the monospace bump and the caret (sized from the

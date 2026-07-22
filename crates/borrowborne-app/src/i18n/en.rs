@@ -13,6 +13,7 @@ pub static EN: Tr = Tr {
     next_puzzle: "Next ▶",
     prev_puzzle: "◀ Prev",
     editor_hint: "Write your spell in real Rust. The world only yields to code that compiles.",
+    editor_keys: "Ctrl+C/X/V · Ctrl+Z undo · Ctrl+Y redo · Tab indents",
     solved_badge: "GATE OPEN",
 
     verdict_pass_title: "The gate opens",

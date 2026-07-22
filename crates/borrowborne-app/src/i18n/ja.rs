@@ -13,6 +13,7 @@ pub static JA: Tr = Tr {
     next_puzzle: "次へ ▶",
     prev_puzzle: "◀ 前へ",
     editor_hint: "本物の Rust で呪文を書け。世界はコンパイルできるコードにのみ道を譲る。",
+    editor_keys: "Ctrl+C/X/V · Ctrl+Z 元に戻す · Ctrl+Y やり直し · Tab インデント",
     solved_badge: "門は開いた",
 
     verdict_pass_title: "門が開く",

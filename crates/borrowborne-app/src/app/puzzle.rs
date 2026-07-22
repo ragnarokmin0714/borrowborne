@@ -190,6 +190,8 @@ fn editor_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
                         .layouter(&mut layouter),
                 );
             });
+        ui.add_space(2.0);
+        ui.label(RichText::new(tr.editor_keys).weak().small());
 
         ui.add_space(6.0);
         ui.horizontal(|ui| {
