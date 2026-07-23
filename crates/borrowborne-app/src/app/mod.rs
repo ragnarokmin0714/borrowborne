@@ -102,6 +102,17 @@ const UI_SCALE_MIN: f32 = 0.8;
 const UI_SCALE_MAX: f32 = 2.5;
 const UI_SCALE_STEP: f32 = 0.1;
 
+/// Stable id for the spell editor's `TextEdit`, so a toolbox click can
+/// find the caret and insert there.
+fn editor_id() -> egui::Id {
+    egui::Id::new("borrowborne-spell-editor")
+}
+
+/// Byte offset of the `char_i`-th character (or the end).
+fn byte_index(s: &str, char_i: usize) -> usize {
+    s.char_indices().nth(char_i).map_or(s.len(), |(b, _)| b)
+}
+
 impl BorrowborneApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         let mut app = Self::headless();
@@ -424,6 +435,36 @@ impl BorrowborneApp {
     /// Current UI zoom, for the control's readout.
     pub fn ui_scale(&self) -> f32 {
         self.ui_scale
+    }
+
+    /// Insert `snippet` into the spell editor at the caret (replacing any
+    /// selection), then refocus the editor. Powers the click-to-insert
+    /// toolbox chips — the game's lightweight stand-in for autocomplete.
+    fn insert_into_code(&mut self, ctx: &egui::Context, snippet: &str) {
+        use egui::text::{CCursor, CCursorRange};
+        let id = editor_id();
+        let mut state = egui::text_edit::TextEditState::load(ctx, id).unwrap_or_default();
+
+        let char_len = self.code.chars().count();
+        let (start, end) = match state.cursor.char_range() {
+            // Replace the selection, or insert at the caret when empty.
+            Some(r) => (
+                r.primary.index.min(r.secondary.index).min(char_len),
+                r.primary.index.max(r.secondary.index).min(char_len),
+            ),
+            // No known caret (editor never focused): append at the end.
+            None => (char_len, char_len),
+        };
+
+        let (bs, be) = (byte_index(&self.code, start), byte_index(&self.code, end));
+        self.code.replace_range(bs..be, snippet);
+
+        let caret = start + snippet.chars().count();
+        state
+            .cursor
+            .set_char_range(Some(CCursorRange::one(CCursor::new(caret))));
+        state.store(ctx, id);
+        ctx.memory_mut(|m| m.request_focus(id));
     }
 
     /// Whether a region shows on the map at all. Hardcore-only regions

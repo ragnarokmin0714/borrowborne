@@ -65,9 +65,18 @@ fn scene_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
                     ui.add_space(10.0);
                     ui.separator();
                     ui.label(RichText::new(tr.toolbox_label).strong().size(13.0));
+                    // Each tool is a chip: click it to drop the named
+                    // syntax into the editor at the caret — the game's
+                    // light stand-in for autocomplete (no semantics).
                     ui.horizontal_wrapped(|ui| {
                         for tool in &toolbox {
-                            ui.label(RichText::new(tool).monospace().size(12.0).color(RUNE_GOLD));
+                            let chip = egui::Button::new(
+                                RichText::new(tool).monospace().size(12.0).color(RUNE_GOLD),
+                            )
+                            .small();
+                            if ui.add(chip).on_hover_text(tr.toolbox_insert).clicked() {
+                                app.insert_into_code(ctx, tool);
+                            }
                         }
                     });
                 }
@@ -184,6 +193,7 @@ fn editor_panel(app: &mut BorrowborneApp, ctx: &egui::Context) {
                 };
                 ui.add(
                     egui::TextEdit::multiline(&mut app.code)
+                        .id(super::editor_id())
                         .code_editor()
                         .desired_rows(16)
                         .desired_width(f32::INFINITY)

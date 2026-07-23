@@ -30,6 +30,7 @@ pub static ZH: Tr = Tr {
     hint_whisper: "🕯 向提燈求問",
     hint_exhausted: "提燈已無話可說。",
     toolbox_label: "🔧 可能會用到的工具",
+    toolbox_insert: "點擊插入編輯器",
     difficulty_label: "誓約",
     difficulty_normal: "夜行者",
     difficulty_easy: "慈悲",

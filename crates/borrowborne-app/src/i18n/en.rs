@@ -30,6 +30,7 @@ pub static EN: Tr = Tr {
     hint_whisper: "🕯 Ask the lantern",
     hint_exhausted: "The lantern has no more to say.",
     toolbox_label: "🔧 Tools you may need",
+    toolbox_insert: "Click to drop into the editor",
     difficulty_label: "Covenant",
     difficulty_normal: "Nightfarer",
     difficulty_easy: "Merciful",

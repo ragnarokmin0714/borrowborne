@@ -30,6 +30,7 @@ pub static JA: Tr = Tr {
     hint_whisper: "🕯 ランタンに問う",
     hint_exhausted: "ランタンはもう何も語らない。",
     toolbox_label: "🔧 使うかもしれない道具",
+    toolbox_insert: "クリックでエディタに挿入",
     difficulty_label: "誓約",
     difficulty_normal: "夜渡り",
     difficulty_easy: "慈悲",

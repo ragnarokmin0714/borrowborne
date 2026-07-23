@@ -5,6 +5,16 @@ All notable changes to Borrowborne are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Click-to-insert toolbox** (issue #3, lightweight take on
+  autocomplete): each tool chip in a puzzle's toolbox is now a button —
+  click it to drop that syntax (`.unwrap_or()`, `match`, `Box<dyn
+  Trait>`, …) into the editor at the caret, replacing any selection and
+  refocusing the editor. No semantic engine (that stays rust-analyzer's
+  job); the candidates are the very tools the puzzle says it may need,
+  so the help is scoped to the lesson.
+
 ## [0.8.1] - 2026-07-23
 
 ### Fixed

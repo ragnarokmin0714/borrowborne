@@ -91,6 +91,8 @@ pub struct Tr {
     /// Free, always-shown list of syntax/methods/types a puzzle may
     /// need — a nudge short of a hint, so it costs nothing.
     pub toolbox_label: &'static str,
+    /// Hover on a toolbox chip — clicking drops it into the editor.
+    pub toolbox_insert: &'static str,
 
     // Difficulty (chosen on the map).
     pub difficulty_label: &'static str,
